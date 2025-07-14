@@ -1,64 +1,62 @@
 <section id="input" class="tab">
   <h2>일일 러닝 기록 입력</h2>
-  <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 20px;">
 
-    <!-- 입력 폼 -->
-    <form id="runForm" style="flex: 1; min-width: 280px;">
-      <select id="nickname" required>
-        <option value="">닉네임 선택</option>
-        <option value="봉무동러너">봉무동러너</option>
-        <option value="후다닭">후다닭</option>
-        <option value="하하하양">하하하양</option>
-        <option value="거북아달려">거북아달려</option>
-        <option value="이봉주">이봉주</option>
-        <option value="겨자색슈즈">겨자색슈즈</option>
-        <option value="권초게">권초게</option>
-        <option value="돌아온빵꾸">돌아온빵꾸</option>
-        <option value="라꾸라꾸조깅">라꾸라꾸조깅</option>
-        <option value="마이세트">마이세트</option>
-        <option value="마커스">마커스</option>
-        <option value="먕먐">먕먐</option>
-        <option value="물냉면">물냉면</option>
-        <option value="뭉공주">뭉공주</option>
-        <option value="바다">바다</option>
-        <option value="삐약삐약">삐약삐약</option>
-        <option value="삼남매맘">삼남매맘</option>
-        <option value="상우쌍우">상우쌍우</option>
-        <option value="세동이">세동이</option>
-        <option value="수다맘">수다맘</option>
-        <option value="술우">술우</option>
-        <option value="신욱재">신욱재</option>
-        <option value="얼쑤야">얼쑤야</option>
-        <option value="우유키">우유키</option>
-        <option value="윤호근">윤호근</option>
-        <option value="이응내">이응내</option>
-        <option value="자달매">자달매</option>
-        <option value="정영준">정영준</option>
-        <option value="하늘은평">하늘은평</option>
-        <option value="해피러닝">해피러닝</option>
-        <option value="후니">후니</option>
-        <option value="goinggoing">goinggoing</option>
-        <option value="JS Jeon">JS Jeon</option>
-        <option value="NJ_Run">NJ_Run</option>
-        <option value="pura vida">pura vida</option>
-      </select>
+  <!-- 입력 폼 -->
+  <form id="runForm" style="width: 100%; max-width: 600px;">
+    <select id="nickname" required>
+      <option value="">닉네임 선택</option>
+      <option value="봉무동러너">봉무동러너</option>
+      <option value="후다닭">후다닭</option>
+      <option value="하하하양">하하하양</option>
+      <option value="거북아달려">거북아달려</option>
+      <option value="이봉주">이봉주</option>
+      <option value="겨자색슈즈">겨자색슈즈</option>
+      <option value="권초게">권초게</option>
+      <option value="돌아온빵꾸">돌아온빵꾸</option>
+      <option value="라꾸라꾸조깅">라꾸라꾸조깅</option>
+      <option value="마이세트">마이세트</option>
+      <option value="마커스">마커스</option>
+      <option value="먕먐">먕먐</option>
+      <option value="물냉면">물냉면</option>
+      <option value="뭉공주">뭉공주</option>
+      <option value="바다">바다</option>
+      <option value="삐약삐약">삐약삐약</option>
+      <option value="삼남매맘">삼남매맘</option>
+      <option value="상우쌍우">상우쌍우</option>
+      <option value="세동이">세동이</option>
+      <option value="수다맘">수다맘</option>
+      <option value="술우">술우</option>
+      <option value="신욱재">신욱재</option>
+      <option value="얼쑤야">얼쑤야</option>
+      <option value="우유키">우유키</option>
+      <option value="윤호근">윤호근</option>
+      <option value="이응내">이응내</option>
+      <option value="자달매">자달매</option>
+      <option value="정영준">정영준</option>
+      <option value="하늘은평">하늘은평</option>
+      <option value="해피러닝">해피러닝</option>
+      <option value="후니">후니</option>
+      <option value="goinggoing">goinggoing</option>
+      <option value="JS Jeon">JS Jeon</option>
+      <option value="NJ_Run">NJ_Run</option>
+      <option value="pura vida">pura vida</option>
+    </select>
 
-      <select id="group" required>
-        <option value="">그룹 선택</option>
-        <option value="뛰어야">뛰어야</option>
-        <option value="산다">산다</option>
-      </select>
+    <select id="group" required>
+      <option value="">그룹 선택</option>
+      <option value="뛰어야">뛰어야</option>
+      <option value="산다">산다</option>
+    </select>
 
-      <input type="date" id="date" required />
-      <input type="number" id="distance" placeholder="거리 (km)" step="0.01" required />
-      <button type="submit">제출</button>
-    </form>
+    <input type="date" id="date" required />
+    <input type="number" id="distance" placeholder="거리 (km)" step="0.01" required />
+    <button type="submit">제출</button>
+  </form>
 
-    <!-- 이미지 삽입 -->
-    <div style="flex: 1; min-width: 280px;">
-      <img src="main.jpg" alt="러닝 이미지" style="width: 100%; max-width: 400px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.1);" />
-    </div>
-
-  </div>
   <p id="submitMsg"></p>
+
+  <!-- 이미지 삽입 - 모바일 친화적으로 입력 아래로 이동 -->
+  <div style="margin-top: 30px;">
+    <img src="main.jpg" alt="러닝 이미지" style="width: 100%; max-width: 400px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.1); display: block; margin: 0 auto;" />
+  </div>
 </section>
