@@ -39,8 +39,17 @@ function updateTable(data) {
   const tbody = document.querySelector("#dataTable tbody");
   tbody.innerHTML = "";
   data.forEach(row => {
+    let dateValue = row.date;
+
+    if (!isNaN(dateValue)) {
+      const baseDate = new Date(1899, 11, 30);
+      dateValue = new Date(baseDate.getTime() + (dateValue * 86400000))
+        .toISOString()
+        .split("T")[0];
+    }
+
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td>${row.nickname}</td><td>${row.group}</td><td>${row.date}</td><td>${row.distance}</td>`;
+    tr.innerHTML = `<td>${row.nickname}</td><td>${row.group}</td><td>${dateValue}</td><td>${row.distance}</td>`;
     tbody.appendChild(tr);
   });
 }
@@ -48,11 +57,21 @@ function updateTable(data) {
 function updateChart(data) {
   const ctx = document.getElementById('runChart').getContext('2d');
   const summary = {};
+  const colors = [];
+
   data.forEach(row => {
-    summary[row.nickname] = (summary[row.nickname] || 0) + parseFloat(row.distance || 0);
+    const name = row.nickname;
+    const dist = parseFloat(row.distance || 0);
+    summary[name] = (summary[name] || 0) + dist;
   });
+
   const labels = Object.keys(summary);
   const values = Object.values(summary);
+
+  const baseColors = ['#4dc9f6','#f67019','#f53794','#537bc4','#acc236','#166a8f','#00a950','#58595b','#8549ba'];
+  for (let i = 0; i < labels.length; i++) {
+    colors.push(baseColors[i % baseColors.length]);
+  }
 
   if (window.runChartInstance) window.runChartInstance.destroy();
 
@@ -60,11 +79,17 @@ function updateChart(data) {
     type: 'bar',
     data: {
       labels: labels,
-      datasets: [{ label: '개인 누적 거리 (km)', data: values }]
+      datasets: [{
+        label: '개인 누적 거리 (km)',
+        data: values,
+        backgroundColor: colors
+      }]
     },
     options: {
       responsive: true,
-      scales: { y: { beginAtZero: true } }
+      scales: {
+        y: { beginAtZero: true }
+      }
     }
   });
 }
@@ -72,11 +97,22 @@ function updateChart(data) {
 function updateTeamChart(data) {
   const ctx = document.getElementById('teamChart').getContext('2d');
   const summary = {};
+
   data.forEach(row => {
-    summary[row.group] = (summary[row.group] || 0) + parseFloat(row.distance || 0);
+    const group = row.group;
+    const dist = parseFloat(row.distance || 0);
+    summary[group] = (summary[group] || 0) + dist;
   });
+
   const labels = Object.keys(summary);
   const values = Object.values(summary);
+
+  const groupColors = {
+    "뛰어야": "#36A2EB",
+    "산다": "#FF6384"
+  };
+
+  const backgroundColors = labels.map(group => groupColors[group] || "#AAAAAA");
 
   if (window.teamChartInstance) window.teamChartInstance.destroy();
 
@@ -84,11 +120,17 @@ function updateTeamChart(data) {
     type: 'bar',
     data: {
       labels: labels,
-      datasets: [{ label: '팀별 누적 거리 (km)', data: values }]
+      datasets: [{
+        label: '팀별 누적 거리 (km)',
+        data: values,
+        backgroundColor: backgroundColors
+      }]
     },
     options: {
       responsive: true,
-      scales: { y: { beginAtZero: true } }
+      scales: {
+        y: { beginAtZero: true }
+      }
     }
   });
 }
