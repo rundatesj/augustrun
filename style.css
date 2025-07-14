@@ -1,36 +1,107 @@
-
+/* 전체 배경 설정 */
 body {
   background: url('main.jpg') no-repeat center center fixed;
   background-size: cover;
   font-family: sans-serif;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+  font-size: 14px;
+}
+
+/* 네비게이션 버튼 스타일 */
+nav {
+  text-align: center;
+  padding: 20px 10px;
 }
 nav button {
-  margin-right: 10px;
+  margin: 5px;
   padding: 10px 20px;
   font-size: 16px;
+  cursor: pointer;
+  border: none;
+  background-color: #ffffffcc;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
-form input, form select, form button {
+
+/* 입력폼 구성 */
+form input,
+form select,
+form button {
   display: block;
-  margin: 10px 0;
-  padding: 10px;
-  font-size: 16px;
-}
-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-th, td {
-  padding: 10px;
+  margin: 10px 0;
+  padding: 12px;
+  font-size: 16px;
   border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
 }
+
+form button {
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  border: none;
+}
+form button:hover {
+  background-color: #45a049;
+}
+
+/* 입력 박스 스타일 */
 #input {
-  background-color: rgba(255, 255, 255, 0.9); /* 흰색 반투명 */
+  background-color: rgba(255, 255, 255, 0.95);
   padding: 30px;
   border-radius: 16px;
   max-width: 500px;
   margin: 40px auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* 표 스타일 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 8px;
+  overflow: hidden;
+}
+th, td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+/* 그래프 캔버스 간격 */
+#chart canvas,
+#data table {
+  margin-bottom: 40px;
+}
+
+/* 반응형 대응 */
+@media screen and (max-width: 600px) {
+  nav button {
+    font-size: 14px;
+    padding: 8px 14px;
+  }
+
+  #input {
+    margin: 20px 10px;
+    padding: 20px;
+  }
+
+  form input,
+  form select,
+  form button {
+    font-size: 15px;
+    padding: 10px;
+  }
+
+  th, td {
+    font-size: 13px;
+    padding: 8px;
+  }
 }
