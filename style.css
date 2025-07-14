@@ -1,98 +1,26 @@
-/* 전체 구조 */
-body {
-  background: #ffffff;
-  font-family: sans-serif;
-  margin: 0;
-  padding: 0;
-}
 
-/* 상단 네비 버튼 */
-nav {
-  text-align: center;
-  padding: 20px 10px;
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f0f4f8;
 }
 nav button {
-  margin: 5px;
+  margin-right: 10px;
   padding: 10px 20px;
   font-size: 16px;
-  border: none;
-  border-radius: 6px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
 }
-nav button:hover {
-  background-color: #0056b3;
-}
-
-/* 입력 박스 영역 */
-#input {
-  background-color: #f9f9f9;
-  padding: 24px;
-  margin: 30px auto;
-  border-radius: 12px;
-  max-width: 500px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* 폼 요소 */
-form input,
-form select,
-form button {
+form input, form select, form button {
   display: block;
-  width: 100%;
   margin: 10px 0;
-  padding: 12px;
+  padding: 10px;
   font-size: 16px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  box-sizing: border-box;
 }
-
-form button {
-  background-color: #28a745;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  border: none;
-}
-form button:hover {
-  background-color: #218838;
-}
-
-/* 테이블 영역 */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 30px;
+  margin-top: 20px;
 }
 th, td {
-  padding: 12px;
+  padding: 10px;
   border: 1px solid #ccc;
-  text-align: center;
-}
-
-/* 모바일 대응 */
-@media screen and (max-width: 600px) {
-  nav button {
-    font-size: 14px;
-    padding: 8px 14px;
-  }
-
-  #input {
-    margin: 20px 10px;
-    padding: 20px;
-  }
-
-  form input,
-  form select,
-  form button {
-    font-size: 15px;
-    padding: 10px;
-  }
-
-  th, td {
-    font-size: 13px;
-    padding: 8px;
-  }
 }
