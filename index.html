@@ -3,135 +3,443 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>러닝크루 테스트</title>
+    <title>러닝크루 월 마일리지 대결</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background: #f0f0f0;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-        }
-        .section {
-            margin: 20px 0;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        .team-score {
-            font-size: 24px;
-            font-weight: bold;
-            margin: 10px 0;
-        }
-        .milk { color: #8b5cf6; }
-        .grape { color: #6366f1; }
-        button {
-            background: #10b981;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background: #059669;
-        }
-        input, textarea {
-            width: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0f2fe 0%, #e8eaf6 100%);
+            height: 100vh;
+            overflow: auto;
             padding: 8px;
-            margin: 5px 0;
-            border: 1px solid #ddd;
-            border-radius: 4px;
         }
-        textarea {
+        
+        .container {
+            height: calc(100vh - 16px);
+            max-height: 900px;
+            display: grid;
+            grid-template-rows: auto 1fr;
+            gap: 8px;
+        }
+        
+        .header {
+            text-align: center;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 1.6rem;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+        
+        .header p {
+            color: #6b7280;
+            font-size: 0.85rem;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 280px 1fr 280px;
+            gap: 8px;
+            height: 100%;
+            min-height: 600px;
+        }
+        
+        .left-panel, .right-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            max-height: calc(100vh - 120px);
+        }
+        
+        .center-panel {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 8px;
+            min-height: 600px;
+        }
+        
+        .team-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .team-card {
+            background: linear-gradient(135deg, #8b5cf6, #9333ea);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .team-card.grape {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+        
+        .team-card h3 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+        }
+        
+        .team-score {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .team-image {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            min-height: 250px;
+        }
+        
+        .chart-container h3 {
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .mini-charts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            min-height: 150px;
+        }
+        
+        .mini-chart {
+            background: white;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .mini-chart h4 {
+            color: #374151;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+        }
+        
+        .chart-canvas {
+            width: 100%;
             height: 100px;
         }
-        .status {
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
+        
+        .main-chart-canvas {
+            width: 100%;
+            height: calc(100% - 30px);
+            min-height: 200px;
+            max-height: 250px;
         }
-        .success { background: #d1fae5; color: #065f46; }
-        .error { background: #fee2e2; color: #991b1b; }
-        .warning { background: #fef3c7; color: #92400e; }
-        table {
+        
+        .setup-section {
+            margin-bottom: 15px;
+        }
+        
+        .setup-section h3 {
+            color: #374151;
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+        
+        .input-group {
+            margin-bottom: 10px;
+        }
+        
+        .input-group label {
+            display: block;
+            color: #374151;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        
+        .input-group input, .input-group textarea {
+            width: 100%;
+            padding: 6px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+        
+        .input-group textarea {
+            height: 60px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: #10b981;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            width: 100%;
+            margin-top: 5px;
+        }
+        
+        .btn:hover {
+            background: #059669;
+        }
+        
+        .btn-small {
+            background: #6b7280;
+            color: white;
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            width: auto;
+        }
+        
+        .btn-small:hover {
+            background: #4b5563;
+        }
+        
+        .status {
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+        
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .status.warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .records-table {
             width: 100%;
             border-collapse: collapse;
-            margin: 10px 0;
+            font-size: 0.8rem;
         }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
+        
+        .records-table th,
+        .records-table td {
+            padding: 6px 8px;
             text-align: left;
+            border-bottom: 1px solid #e5e7eb;
         }
-        th {
+        
+        .records-table th {
             background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .team-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .team-badge.milk {
+            background: #ede9fe;
+            color: #7c3aed;
+        }
+        
+        .team-badge.grape {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+        
+        .iframe-container {
+            width: 100%;
+            height: 280px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 250px 1fr 250px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto;
+                height: auto;
+            }
+            
+            .container {
+                height: auto;
+                grid-template-rows: auto auto;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto;
+                height: auto;
+            }
+            
+            .mini-charts {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🏆 러닝크루 대결 (테스트 버전)</h1>
-        
-        <!-- 상태 확인 -->
-        <div class="section">
-            <h2>📊 시스템 상태</h2>
-            <div id="system-status">시스템 로딩 중...</div>
-            <div style="margin-top: 10px; font-size: 14px; color: #666;">
-                ⚠️ <strong>중요:</strong> 로컬 파일에서는 CORS 제한으로 구글 시트 접근이 불가능합니다.<br>
-                📁 <strong>해결책:</strong> GitHub Pages나 다른 웹 호스팅에 배포하세요.
+        <!-- 헤더 -->
+        <div class="header">
+            <h1>🏆 러닝크루 월 마일리지 대결</h1>
+            <p>우유팀 vs 포도팀 - 실시간 대결 현황</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 왼쪽 패널: 설정 및 기록 입력 -->
+            <div class="left-panel">
+                <!-- 관리자 설정 버튼 (JavaScript에서 추가됨) -->
+                
+                <!-- CSV 설정 (기본 숨김) -->
+                <div class="setup-section hidden" id="csv-setup">
+                    <h3>📊 데이터 연결</h3>
+                    <div class="input-group">
+                        <label>스프레드시트 CSV URL</label>
+                        <input type="url" id="csvUrl" placeholder="CSV URL을 입력하세요">
+                        <button class="btn" onclick="loadData()">데이터 로드</button>
+                        <div id="status"></div>
+                    </div>
+                </div>
+
+                <!-- Forms 설정 (기본 숨김) -->
+                <div class="setup-section hidden" id="forms-setup">
+                    <h3>📝 Forms 연결</h3>
+                    <div class="input-group">
+                        <label>Google Forms 임베드 코드</label>
+                        <textarea id="formsEmbed" placeholder="<iframe src=...></iframe>"></textarea>
+                        <button class="btn" onclick="embedForms()">Forms 연결</button>
+                    </div>
+                </div>
+
+                <!-- Google Forms (항상 표시) -->
+                <div class="setup-section">
+                    <h3>🏃‍♂️ 기록 입력</h3>
+                    <div class="iframe-container" id="forms-container">
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #6b7280; text-align: center; font-size: 0.9rem;">
+                            자동 연결 중...
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- 팀 점수 -->
-        <div class="section">
-            <h2>🏃‍♂️ 팀별 점수</h2>
-            <div class="team-score milk">🥛 우유팀: <span id="milk-score">0</span> km</div>
-            <div class="team-score grape">🍇 포도팀: <span id="grape-score">0</span> km</div>
-        </div>
+            <!-- 가운데 패널: 메인 차트 -->
+            <div class="center-panel">
+                <!-- 팀 점수 -->
+                <div class="team-cards">
+                    <div class="team-card">
+                        <img src="https://raw.githubusercontent.com/rundatesj/Runday_2508/main/%EC%9A%B0%EC%9C%A0.jpg" 
+                             alt="우유팀" class="team-image">
+                        <h3>🥛 우유팀</h3>
+                        <div class="team-score" id="milk-score">0 km</div>
+                    </div>
+                    <div class="team-card grape">
+                        <img src="https://raw.githubusercontent.com/rundatesj/Runday_2508/main/%ED%8F%AC%EB%8F%84.jpg" 
+                             alt="포도팀" class="team-image">
+                        <h3>🍇 포도팀</h3>
+                        <div class="team-score" id="grape-score">0 km</div>
+                    </div>
+                </div>
 
-        <!-- 데이터 연결 -->
-        <div class="section">
-            <h2>📊 데이터 연결</h2>
-            <input type="url" id="csvUrl" placeholder="CSV URL 입력" value="https://docs.google.com/spreadsheets/d/e/2PACX-1vQSxKnN2BUIBcbNrpywGy2F_YjLnzWjabSOSCO_Kmwnq-mvia1E6g4ezt5nwwEj-3CWblrJO1xjaLTk/pub?output=csv">
-            <button onclick="testLoadData()">데이터 로드 테스트</button>
-            <div id="data-status"></div>
-        </div>
+                <!-- 메인 차트 -->
+                <div class="chart-container">
+                    <h3>팀별 누적 기록</h3>
+                    <canvas id="mainChart" class="main-chart-canvas"></canvas>
+                </div>
 
-        <!-- Forms 연결 -->
-        <div class="section">
-            <h2>📝 Forms 연결</h2>
-            <textarea id="formsEmbed" placeholder="Forms 임베드 코드 입력"><iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfToqiLU4-8Ckl23xO3y_r6dvjSDheU6TgALlvd2QT0e0na-Q/viewform?embedded=true" width="100%" height="400" frameborder="0">로드 중...</iframe></textarea>
-            <button onclick="testEmbedForms()">Forms 연결 테스트</button>
-            <div id="forms-status"></div>
-            <div id="forms-container" style="border: 1px solid #ccc; height: 400px; margin: 10px 0;">
-                Forms가 여기에 표시됩니다
+                <!-- 미니 차트들 -->
+                <div class="mini-charts">
+                    <div class="mini-chart">
+                        <h4>팀 비율</h4>
+                        <canvas id="pieChart" class="chart-canvas"></canvas>
+                    </div>
+                    <div class="mini-chart">
+                        <h4>개인 TOP 5</h4>
+                        <canvas id="personalChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
             </div>
-        </div>
 
-        <!-- 기록 표시 -->
-        <div class="section">
-            <h2>📋 기록 현황</h2>
-            <div>총 기록 수: <span id="record-count">0</span>개</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>크루원</th>
-                        <th>팀</th>
-                        <th>거리</th>
-                        <th>날짜</th>
-                    </tr>
-                </thead>
-                <tbody id="records-table">
-                    <tr><td colspan="4">데이터를 로드해주세요</td></tr>
-                </tbody>
-            </table>
+            <!-- 오른쪽 패널: 기록 목록 -->
+            <div class="right-panel">
+                <div class="setup-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h3>📋 최근 기록</h3>
+                        <button class="btn-small" onclick="loadData()">🔄</button>
+                    </div>
+                    
+                    <div style="max-height: calc(100vh - 300px); overflow-y: auto;">
+                        <table class="records-table">
+                            <thead>
+                                <tr>
+                                    <th>크루원</th>
+                                    <th>팀</th>
+                                    <th>거리</th>
+                                    <th>날짜</th>
+                                </tr>
+                            </thead>
+                            <tbody id="records-tbody">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: #6b7280; padding: 20px;">
+                                        데이터 로드 중...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -143,57 +451,81 @@
         };
         
         let records = [];
+        let charts = {};
         
-        // 페이지 로드시 실행
+        // 기본 설정값
+        const DEFAULT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQSxKnN2BUIBcbNrpywGy2F_YjLnzWjabSOSCO_Kmwnq-mvia1E6g4ezt5nwwEj-3CWblrJO1xjaLTk/pub?output=csv';
+        const DEFAULT_FORMS_EMBED = '<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfToqiLU4-8Ckl23xO3y_r6dvjSDheU6TgALlvd2QT0e0na-Q/viewform?embedded=true" width="100%" height="280" frameborder="0">로드 중…</iframe>';
+        
+        // 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('페이지 로드 완료');
-            updateSystemStatus('✅ 시스템 로드 완료');
+            console.log('시스템 초기화 시작');
             
-            // 로컬 테스트를 위한 더미 데이터 생성
-            setTimeout(() => {
-                console.log('더미 데이터 로드 시작');
-                loadDummyData();
-            }, 1000);
+            // 관리자 설정 버튼 추가
+            addSettingsToggle();
             
-            // 실제 CSV도 시도
-            setTimeout(() => {
-                console.log('실제 데이터 로드 시도');
-                testLoadData();
-            }, 2000);
+            // 자동으로 기본 설정 적용
+            const savedCsvUrl = localStorage.getItem('csvUrl') || DEFAULT_CSV_URL;
+            const savedFormsEmbed = localStorage.getItem('formsEmbed') || DEFAULT_FORMS_EMBED;
+            
+            document.getElementById('csvUrl').value = savedCsvUrl;
+            document.getElementById('formsEmbed').value = savedFormsEmbed;
+            
+            // 자동으로 연결 실행
+            embedForms();
+            loadData();
+            
+            console.log('자동 설정 완료');
         });
         
-        // 더미 데이터 로드 (테스트용)
-        function loadDummyData() {
-            console.log('더미 데이터 생성 중...');
+        // 관리자 설정 토글 버튼 추가
+        function addSettingsToggle() {
+            const leftPanel = document.querySelector('.left-panel');
             
-            const dummyRecords = [
-                { timestamp: '2025-01-15 10:30', userId: 'goinggoing', team: '우유', date: '2025-01-15', distance: 5.0 },
-                { timestamp: '2025-01-15 11:00', userId: '권초게', team: '포도', date: '2025-01-15', distance: 3.5 },
-                { timestamp: '2025-01-15 11:30', userId: '마커스', team: '우유', date: '2025-01-15', distance: 4.2 },
-                { timestamp: '2025-01-15 12:00', userId: '바다', team: '포도', date: '2025-01-15', distance: 6.1 },
-                { timestamp: '2025-01-15 12:30', userId: '봉무동러너', team: '우유', date: '2025-01-15', distance: 7.3 }
-            ];
+            const toggleBtn = document.createElement('div');
+            toggleBtn.innerHTML = `
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button class="btn-small" onclick="toggleSettings()" id="toggle-btn">
+                        ⚙️ 관리자 설정
+                    </button>
+                </div>
+            `;
             
-            records = dummyRecords;
-            console.log('더미 데이터 로드됨:', records);
-            
-            showStatus('data-status', 'success', `더미 데이터 ${records.length}개 로드됨 (테스트용)`);
-            updateSystemStatus('✅ 더미 데이터 로드 완료');
-            updateUI();
+            leftPanel.insertBefore(toggleBtn, leftPanel.firstChild);
         }
         
-        // 시스템 상태 업데이트
-        function updateSystemStatus(message) {
-            document.getElementById('system-status').textContent = message;
-            console.log('시스템 상태:', message);
+        // 설정 토글
+        function toggleSettings() {
+            const csvSetup = document.getElementById('csv-setup');
+            const formsSetup = document.getElementById('forms-setup');
+            const toggleBtn = document.getElementById('toggle-btn');
+            
+            const isHidden = csvSetup.classList.contains('hidden');
+            
+            if (isHidden) {
+                csvSetup.classList.remove('hidden');
+                formsSetup.classList.remove('hidden');
+                toggleBtn.textContent = '❌ 설정 숨기기';
+            } else {
+                csvSetup.classList.add('hidden');
+                formsSetup.classList.add('hidden');
+                toggleBtn.textContent = '⚙️ 관리자 설정';
+            }
         }
         
-        // 상태 메시지 표시
-        function showStatus(elementId, type, message) {
-            const element = document.getElementById(elementId);
-            element.className = `status ${type}`;
-            element.textContent = message;
-            console.log(`${elementId}:`, message);
+        // Google Forms 임베드
+        function embedForms() {
+            const embedCode = document.getElementById('formsEmbed').value.trim();
+            const container = document.getElementById('forms-container');
+            
+            if (!embedCode) {
+                showStatus('error', 'Forms 임베드 코드를 입력해주세요.');
+                return;
+            }
+            
+            container.innerHTML = embedCode;
+            localStorage.setItem('formsEmbed', embedCode);
+            showStatus('success', 'Google Forms 연결됨!');
         }
         
         // 사용자 팀 찾기
@@ -206,58 +538,55 @@
             return null;
         }
         
-        // 데이터 로드 테스트
-        async function testLoadData() {
-            console.log('데이터 로드 시작');
-            updateSystemStatus('📊 데이터 로드 중...');
-            
-            const csvUrl = document.getElementById('csvUrl').value;
-            console.log('CSV URL:', csvUrl);
+        // 데이터 로드
+        async function loadData() {
+            const csvUrl = document.getElementById('csvUrl').value.trim();
             
             if (!csvUrl) {
-                showStatus('data-status', 'error', 'CSV URL이 없습니다');
+                showStatus('error', 'CSV URL을 입력해주세요.');
                 return;
             }
             
             try {
-                showStatus('data-status', 'warning', '데이터 로드 중...');
+                showStatus('warning', '로드 중...');
                 
-                console.log('Fetch 시작');
                 const response = await fetch(csvUrl);
-                console.log('Response:', response);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
                 const csvText = await response.text();
-                console.log('CSV 데이터 받음, 길이:', csvText.length);
-                console.log('CSV 첫 500자:', csvText.substring(0, 500));
-                
                 records = parseCSV(csvText);
-                console.log('파싱된 레코드:', records);
                 
-                showStatus('data-status', 'success', `${records.length}개 기록 로드 성공!`);
-                updateSystemStatus('✅ 데이터 로드 완료');
+                localStorage.setItem('csvUrl', csvUrl);
+                showStatus('success', `${records.length}개 기록 로드됨!`);
                 updateUI();
                 
             } catch (error) {
-                console.error('데이터 로드 실패:', error);
-                showStatus('data-status', 'error', `로드 실패: ${error.message}`);
-                updateSystemStatus('❌ 데이터 로드 실패');
+                showStatus('error', `로드 실패: ${error.message}`);
+                console.log('실제 데이터 로드 실패, 더미 데이터 사용');
+                loadDummyData(); // 실패시 더미 데이터 사용
             }
+        }
+        
+        // 더미 데이터 로드 (로컬 테스트용)
+        function loadDummyData() {
+            records = [
+                { timestamp: '2025-01-15 10:30', userId: 'goinggoing', team: '우유', date: '2025-01-15', distance: 5.0 },
+                { timestamp: '2025-01-15 11:00', userId: '권초게', team: '포도', date: '2025-01-15', distance: 3.5 },
+                { timestamp: '2025-01-15 11:30', userId: '마커스', team: '우유', date: '2025-01-15', distance: 4.2 },
+                { timestamp: '2025-01-15 12:00', userId: '바다', team: '포도', date: '2025-01-15', distance: 6.1 },
+                { timestamp: '2025-01-15 12:30', userId: '봉무동러너', team: '우유', date: '2025-01-15', distance: 7.3 },
+                { timestamp: '2025-01-16 09:00', userId: '자달매', team: '포도', date: '2025-01-16', distance: 2.8 },
+                { timestamp: '2025-01-16 10:15', userId: '신욱재', team: '우유', date: '2025-01-16', distance: 6.5 }
+            ];
+            
+            showStatus('warning', `더미 데이터 ${records.length}개 로드됨 (테스트용)`);
+            updateUI();
         }
         
         // CSV 파싱
         function parseCSV(csvText) {
-            console.log('CSV 파싱 시작');
             const lines = csvText.trim().split('\n');
-            console.log('CSV 라인 수:', lines.length);
-            
-            if (lines.length <= 1) {
-                console.log('데이터가 없음');
-                return [];
-            }
+            if (lines.length <= 1) return [];
             
             const data = [];
             
@@ -266,7 +595,6 @@
                 if (!line) continue;
                 
                 const columns = line.split(',');
-                console.log(`라인 ${i}:`, columns);
                 
                 if (columns.length >= 4) {
                     const timestamp = columns[0] || '';
@@ -276,13 +604,12 @@
                     
                     if (userId && distance && !isNaN(parseFloat(distance))) {
                         const team = findUserTeam(userId.trim());
-                        console.log(`${userId} -> ${team}`);
                         
                         if (team) {
                             data.push({
-                                timestamp,
+                                timestamp: timestamp.trim(),
                                 userId: userId.trim(),
-                                team,
+                                team: team,
                                 date: date.trim(),
                                 distance: parseFloat(distance.trim())
                             });
@@ -291,86 +618,169 @@
                 }
             }
             
-            console.log('파싱 완료, 데이터 수:', data.length);
             return data;
         }
         
-        // Forms 임베드 테스트
-        function testEmbedForms() {
-            console.log('Forms 임베드 시작');
+        // 상태 표시
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('status');
+            if (!statusDiv) return;
             
-            const embedCode = document.getElementById('formsEmbed').value;
-            console.log('임베드 코드:', embedCode);
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
             
-            if (!embedCode) {
-                showStatus('forms-status', 'error', 'Forms 코드가 없습니다');
-                return;
-            }
-            
-            try {
-                const container = document.getElementById('forms-container');
-                container.innerHTML = embedCode;
-                showStatus('forms-status', 'success', 'Forms 연결 성공!');
-                console.log('Forms 임베드 완료');
-            } catch (error) {
-                console.error('Forms 임베드 실패:', error);
-                showStatus('forms-status', 'error', `Forms 연결 실패: ${error.message}`);
+            if (type === 'success') {
+                setTimeout(() => statusDiv.innerHTML = '', 3000);
             }
         }
         
         // UI 업데이트
         function updateUI() {
-            console.log('UI 업데이트 시작');
             updateTeamScores();
+            updateCharts();
             updateRecordsTable();
         }
         
         // 팀 점수 업데이트
         function updateTeamScores() {
             const totals = { '우유': 0, '포도': 0 };
-            records.forEach(r => {
-                totals[r.team] += r.distance;
-            });
+            records.forEach(r => totals[r.team] += r.distance);
             
-            document.getElementById('milk-score').textContent = totals['우유'].toFixed(1);
-            document.getElementById('grape-score').textContent = totals['포도'].toFixed(1);
-            
-            console.log('팀 점수 업데이트:', totals);
+            document.getElementById('milk-score').textContent = `${totals['우유'].toFixed(1)} km`;
+            document.getElementById('grape-score').textContent = `${totals['포도'].toFixed(1)} km`;
         }
         
-        // 기록 테이블 업데이트
-        function updateRecordsTable() {
-            const tbody = document.getElementById('records-table');
-            const countEl = document.getElementById('record-count');
+        // 차트 업데이트
+        function updateCharts() {
+            updateMainChart();
+            updatePieChart();
+            updatePersonalChart();
+        }
+        
+        // 메인 차트 업데이트
+        function updateMainChart() {
+            const ctx = document.getElementById('mainChart').getContext('2d');
             
-            countEl.textContent = records.length;
+            if (charts.main) {
+                charts.main.destroy();
+            }
+            
+            const dailyData = {};
+            records.forEach(r => {
+                let normalizedDate = r.date.replace(/\./g, '-').replace(/\s+/g, '');
+                if (!dailyData[normalizedDate]) dailyData[normalizedDate] = { '우유': 0, '포도': 0 };
+                dailyData[normalizedDate][r.team] += r.distance;
+            });
+            
+            const dates = Object.keys(dailyData).sort();
+            let milkTotal = 0, grapeTotal = 0;
+            
+            const chartData = dates.map(date => {
+                milkTotal += dailyData[date]['우유'];
+                grapeTotal += dailyData[date]['포도'];
+                return { date, milk: milkTotal, grape: grapeTotal };
+            });
+            
+            charts.main = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: chartData.map(d => d.date),
+                    datasets: [
+                        { label: '🥛 우유팀', data: chartData.map(d => d.milk), backgroundColor: '#8b5cf6' },
+                        { label: '🍇 포도팀', data: chartData.map(d => d.grape), backgroundColor: '#6366f1' }
+                    ]
+                },
+                options: { 
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        x: { beginAtZero: true },
+                        y: { }
+                    },
+                    plugins: { legend: { position: 'top' } }
+                }
+            });
+        }
+        
+        // 파이 차트 업데이트
+        function updatePieChart() {
+            const ctx = document.getElementById('pieChart').getContext('2d');
+            
+            if (charts.pie) {
+                charts.pie.destroy();
+            }
+            
+            const totals = { '우유': 0, '포도': 0 };
+            records.forEach(r => totals[r.team] += r.distance);
+            
+            charts.pie = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['🥛 우유팀', '🍇 포도팀'],
+                    datasets: [{
+                        data: [totals['우유'], totals['포도']],
+                        backgroundColor: ['#8b5cf6', '#6366f1']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: { size: 8 } } } }
+                }
+            });
+        }
+        
+        // 개인별 차트 업데이트
+        function updatePersonalChart() {
+            const ctx = document.getElementById('personalChart').getContext('2d');
+            
+            if (charts.personal) {
+                charts.personal.destroy();
+            }
+            
+            const totals = {};
+            records.forEach(r => totals[r.userId] = (totals[r.userId] || 0) + r.distance);
+            
+            const top5 = Object.entries(totals)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 5);
+            
+            charts.personal = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: top5.map(([user]) => user.length > 8 ? user.substring(0, 8) + '...' : user),
+                    datasets: [{
+                        label: 'km',
+                        data: top5.map(([,total]) => total),
+                        backgroundColor: top5.map(([user]) => findUserTeam(user) === '우유' ? '#8b5cf6' : '#6366f1')
+                    }]
+                },
+                options: { 
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        x: { beginAtZero: true },
+                        y: { ticks: { font: { size: 8 } } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+        
+        // 테이블 업데이트
+        function updateRecordsTable() {
+            const tbody = document.getElementById('records-tbody');
             
             if (records.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4">기록이 없습니다</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #6b7280; padding: 20px;">기록이 없습니다</td></tr>';
                 return;
             }
             
-            const recent = records.slice(-10).reverse();
+            const recent = records.slice(-20).reverse();
+            
             tbody.innerHTML = recent.map(r => `
                 <tr>
-                    <td>${r.userId}</td>
-                    <td style="color: ${r.team === '우유' ? '#8b5cf6' : '#6366f1'}">${r.team}</td>
-                    <td><strong>${r.distance}km</strong></td>
-                    <td>${r.date}</td>
-                </tr>
-            `).join('');
-            
-            console.log('테이블 업데이트 완료');
-        }
-        
-        // 전역 오류 핸들링
-        window.onerror = function(msg, url, lineNo, columnNo, error) {
-            console.error('전역 오류:', msg, 'at', lineNo + ':' + columnNo);
-            updateSystemStatus('❌ JavaScript 오류 발생');
-            return false;
-        };
-        
-        console.log('스크립트 로드 완료');
-    </script>
-</body>
-</html>
+                    <td>${r.userId.length > 8 ? r.userId.substring(0, 8) + '...' : r.userId}</td>
+                    <td><span class="team-badge ${r.team === '우유' ? 'milk' : 'grape'}">${r.team === '우유' ? '🥛' : '🍇'}</span></td>
