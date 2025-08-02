@@ -1,6 +1,0 @@
-
-body { font-family: sans-serif; padding: 20px; background: #f0f0f0; }
-.dashboard { display: flex; gap: 20px; margin-bottom: 20px; }
-.team-card { background: white; padding: 20px; border-radius: 10px; flex: 1; text-align: center; }
-form { display: flex; gap: 10px; margin-bottom: 20px; }
-#historyList { background: white; padding: 20px; border-radius: 10px; }
