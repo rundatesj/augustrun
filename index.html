@@ -399,7 +399,7 @@
 
                 <!-- 메인 차트 -->
                 <div class="chart-container">
-                    <h3>팀별 누적 기록</h3>
+                    <h3>팀별 누적 기록 비교</h3>
                     <canvas id="mainChart" class="main-chart-canvas"></canvas>
                 </div>
 
@@ -683,7 +683,7 @@
             updatePersonalChart();
         }
         
-        // 메인 차트 업데이트 (가로형으로 개선)
+        // 메인 차트 업데이트 (가로 막대 차트로 변경)
         function updateMainChart() {
             const ctx = document.getElementById('mainChart').getContext('2d');
             
@@ -691,82 +691,40 @@
                 charts.main.destroy();
             }
             
-            // 날짜별 데이터 집계
-            const dailyData = {};
-            records.forEach(r => {
-                // 날짜 정규화
-                let normalizedDate = r.date.replace(/\./g, '-').replace(/\s+/g, '');
-                if (!dailyData[normalizedDate]) {
-                    dailyData[normalizedDate] = { '우유': 0, '포도': 0 };
-                }
-                dailyData[normalizedDate][r.team] += r.distance;
-            });
-            
-            const dates = Object.keys(dailyData).sort();
-            let milkTotal = 0, grapeTotal = 0;
-            
-            const chartData = dates.map(date => {
-                milkTotal += dailyData[date]['우유'];
-                grapeTotal += dailyData[date]['포도'];
-                return { 
-                    date: date.substring(5), // MM-DD 형태로 표시
-                    milk: milkTotal, 
-                    grape: grapeTotal 
-                };
-            });
+            // 팀별 총합 계산
+            const totals = { '우유': 0, '포도': 0 };
+            records.forEach(r => totals[r.team] += r.distance);
             
             charts.main = new Chart(ctx, {
-                type: 'line',
+                type: 'bar',
                 data: {
-                    labels: chartData.map(d => d.date),
-                    datasets: [
-                        { 
-                            label: '🥛 우유팀', 
-                            data: chartData.map(d => d.milk), 
-                            backgroundColor: 'rgba(139, 92, 246, 0.2)',
-                            borderColor: '#8b5cf6',
-                            borderWidth: 3,
-                            tension: 0.3,
-                            fill: false,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        },
-                        { 
-                            label: '🍇 포도팀', 
-                            data: chartData.map(d => d.grape), 
-                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                            borderColor: '#6366f1',
-                            borderWidth: 3,
-                            tension: 0.3,
-                            fill: false,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }
-                    ]
+                    labels: ['🥛 우유팀', '🍇 포도팀'],
+                    datasets: [{
+                        label: '누적 거리 (km)',
+                        data: [totals['우유'], totals['포도']],
+                        backgroundColor: ['#8b5cf6', '#6366f1'],
+                        borderColor: ['#7c3aed', '#4338ca'],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
                 },
                 options: { 
+                    indexAxis: 'y', // 가로 막대
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: {
-                        intersect: false,
-                        mode: 'index'
-                    },
                     scales: { 
-                        y: { 
+                        x: { 
                             beginAtZero: true, 
                             title: { display: true, text: '누적 거리 (km)' },
                             grid: { color: 'rgba(0,0,0,0.1)' }
                         },
-                        x: { 
-                            title: { display: true, text: '날짜' },
-                            grid: { display: false }
+                        y: { 
+                            grid: { display: false },
+                            ticks: { font: { size: 14, weight: 'bold' } }
                         }
                     },
                     plugins: { 
-                        legend: { 
-                            position: 'top',
-                            labels: { usePointStyle: true, padding: 15 }
-                        },
+                        legend: { display: false },
                         tooltip: {
                             backgroundColor: 'rgba(0,0,0,0.8)',
                             titleColor: 'white',
@@ -775,9 +733,19 @@
                             borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
-                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} km`;
+                                    const total = totals['우유'] + totals['포도'];
+                                    const percentage = ((context.parsed.x / total) * 100).toFixed(1);
+                                    return `${context.parsed.x.toFixed(1)} km (${percentage}%)`;
                                 }
                             }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            left: 10,
+                            right: 10,
+                            top: 20,
+                            bottom: 20
                         }
                     }
                 }
@@ -896,7 +864,7 @@
             });
         }
         
-        // 테이블 업데이트
+        // 테이블 업데이트 (날짜 표시 개선)
         function updateRecordsTable() {
             const tbody = document.getElementById('records-tbody');
             
@@ -907,14 +875,40 @@
             
             const recent = records.slice(-20).reverse();
             
-            tbody.innerHTML = recent.map(r => `
-                <tr>
-                    <td>${r.userId.length > 8 ? r.userId.substring(0, 8) + '...' : r.userId}</td>
-                    <td><span class="team-badge ${r.team === '우유' ? 'milk' : 'grape'}">${r.team === '우유' ? '🥛' : '🍇'}</span></td>
-                    <td>${r.distance.toFixed(1)}km</td>
-                    <td>${r.date.substring(5) || r.date}</td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = recent.map(r => {
+                // 날짜 형식 정리
+                let displayDate = r.date;
+                if (displayDate) {
+                    // 다양한 날짜 형식 처리
+                    displayDate = displayDate.replace(/\./g, '-').replace(/\s+/g, '');
+                    
+                    // YYYY-MM-DD 형식인 경우 MM-DD만 추출
+                    if (displayDate.length >= 10 && displayDate.includes('-')) {
+                        const parts = displayDate.split('-');
+                        if (parts.length >= 3) {
+                            displayDate = `${parts[1]}-${parts[2]}`;
+                        } else if (parts.length === 2) {
+                            displayDate = `${parts[0]}-${parts[1]}`;
+                        }
+                    }
+                    
+                    // MM-DD 형식이 아닌 경우 원본 사용
+                    if (displayDate.length > 10) {
+                        displayDate = r.date.substring(0, 10);
+                    }
+                } else {
+                    displayDate = '--';
+                }
+                
+                return `
+                    <tr>
+                        <td>${r.userId.length > 8 ? r.userId.substring(0, 8) + '...' : r.userId}</td>
+                        <td><span class="team-badge ${r.team === '우유' ? 'milk' : 'grape'}">${r.team === '우유' ? '🥛' : '🍇'}</span></td>
+                        <td>${r.distance.toFixed(1)}km</td>
+                        <td>${displayDate}</td>
+                    </tr>
+                `;
+            }).join('');
         }
     </script>
 </body>
