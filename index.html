@@ -977,7 +977,7 @@
             });
         }
         
-        // 테이블 업데이트 (날짜 파싱 완전 개선)
+        // 테이블 업데이트 (거리와 날짜 컬럼 순서 바꾸기)
         function updateRecordsTable() {
             const tbody = document.getElementById('records-tbody');
             
@@ -989,60 +989,23 @@
             const recent = records.slice(-20).reverse();
             
             tbody.innerHTML = recent.map(r => {
-                // 날짜 형식 완전히 새로 처리
-                let displayDate = '--';
+                // 거리와 날짜가 바뀌어 있는 상황 - 서로 바꿔서 표시
+                let displayDate = r.distance ? r.distance.toString() : '--'; // 원래 거리 필드를 날짜로
+                let displayDistance = r.date ? parseFloat(r.date) : 0; // 원래 날짜 필드를 거리로
                 
-                if (r.date && typeof r.date === 'string') {
-                    let dateStr = r.date.trim();
-                    
-                    // 타임스탬프에서 날짜 추출 시도
-                    if (r.timestamp && r.timestamp.includes(' ')) {
-                        dateStr = r.timestamp.split(' ')[0];
+                // 날짜 형식 정리 (숫자로 들어온 날짜 처리)
+                if (displayDate && !isNaN(displayDate)) {
+                    // 20241215 같은 형식일 경우
+                    if (displayDate.length === 8) {
+                        displayDate = `${displayDate.substring(4,6)}-${displayDate.substring(6,8)}`;
+                    } 
+                    // 1215 같은 형식일 경우 
+                    else if (displayDate.length === 4) {
+                        displayDate = `${displayDate.substring(0,2)}-${displayDate.substring(2,4)}`;
                     }
-                    
-                    // 다양한 날짜 형식 처리
-                    if (dateStr.includes('-')) {
-                        // YYYY-MM-DD 또는 MM-DD 형식
-                        const parts = dateStr.split('-');
-                        if (parts.length === 3) {
-                            // YYYY-MM-DD
-                            displayDate = `${parts[1]}-${parts[2]}`;
-                        } else if (parts.length === 2) {
-                            // MM-DD
-                            displayDate = dateStr;
-                        }
-                    } else if (dateStr.includes('.')) {
-                        // YYYY.MM.DD 형식
-                        const parts = dateStr.split('.');
-                        if (parts.length === 3) {
-                            displayDate = `${parts[1]}-${parts[2]}`;
-                        }
-                    } else if (dateStr.includes('/')) {
-                        // MM/DD/YYYY 또는 YYYY/MM/DD 형식
-                        const parts = dateStr.split('/');
-                        if (parts.length === 3) {
-                            if (parts[0].length === 4) {
-                                // YYYY/MM/DD
-                                displayDate = `${parts[1]}-${parts[2]}`;
-                            } else {
-                                // MM/DD/YYYY
-                                displayDate = `${parts[0]}-${parts[1]}`;
-                            }
-                        }
-                    } else if (dateStr.length === 8 && !isNaN(dateStr)) {
-                        // YYYYMMDD 형식
-                        displayDate = `${dateStr.substring(4,6)}-${dateStr.substring(6,8)}`;
-                    } else if (dateStr.length >= 8) {
-                        // 기타 긴 문자열에서 날짜 추출 시도
-                        const match = dateStr.match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
-                        if (match) {
-                            displayDate = `${match[2].padStart(2, '0')}-${match[3].padStart(2, '0')}`;
-                        }
-                    }
-                    
-                    // 여전히 이상한 값이면 원본 사용 (디버깅용)
-                    if (displayDate === '--' || displayDate.includes('undefined')) {
-                        displayDate = dateStr.substring(0, 10) || '--';
+                    // 기타 숫자 형식
+                    else {
+                        displayDate = displayDate.toString();
                     }
                 }
                 
@@ -1050,7 +1013,7 @@
                     <tr>
                         <td>${r.userId.length > 8 ? r.userId.substring(0, 8) + '...' : r.userId}</td>
                         <td><span class="team-badge ${r.team === '우유' ? 'milk' : 'grape'}">${r.team === '우유' ? '🥛' : '🍇'}</span></td>
-                        <td>${r.distance.toFixed(1)}km</td>
+                        <td>${displayDistance.toFixed(1)}km</td>
                         <td>${displayDate}</td>
                     </tr>
                 `;
