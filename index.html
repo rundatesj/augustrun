@@ -77,7 +77,7 @@
         }
         
         .team-card {
-            background: linear-gradient(135deg, #8b5cf6, #9333ea);
+            background: linear-gradient(135deg, #f8bbd9, #f472b6);
             color: white;
             padding: 15px;
             border-radius: 12px;
@@ -86,7 +86,7 @@
         }
         
         .team-card.grape {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            background: linear-gradient(135deg, #c7d2fe, #a5b4fc);
         }
         
         .team-card h3 {
@@ -273,13 +273,13 @@
         }
         
         .team-badge.milk {
-            background: #ede9fe;
-            color: #7c3aed;
+            background: #fce7f3;
+            color: #be185d;
         }
         
         .team-badge.grape {
             background: #e0e7ff;
-            color: #4338ca;
+            color: #6366f1;
         }
         
         .iframe-container {
@@ -594,19 +594,21 @@
             updateUI();
         }
         
-        // CSV 파싱 개선
+        // CSV 파싱 개선 (컬럼 순서 문제 해결)
         function parseCSV(csvText) {
             const lines = csvText.trim().split('\n');
             if (lines.length <= 1) return [];
             
             const data = [];
+            console.log('=== CSV 파싱 디버깅 (컬럼 순서 문제 해결) ===');
             console.log('CSV 파싱 시작, 총 라인:', lines.length);
             
             // 헤더 확인
             const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
             console.log('헤더:', headers);
+            console.log('헤더 개수:', headers.length);
             
-            for (let i = 1; i < lines.length; i++) {
+            for (let i = 1; i < Math.min(lines.length, 6); i++) { // 처음 5개 데이터만 디버깅
                 const line = lines[i].trim();
                 if (!line) continue;
                 
@@ -614,17 +616,130 @@
                 const columns = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
                 const cleanColumns = columns.map(col => col.replace(/^"|"$/g, '').trim());
                 
-                console.log(`라인 ${i}:`, cleanColumns);
+                console.log(`라인 ${i} 원본:`, line);
+                console.log(`라인 ${i} 파싱:`, cleanColumns);
+                console.log(`컬럼 개수: ${cleanColumns.length}`);
                 
-                if (cleanColumns.length >= 4) {
-                    const timestamp = cleanColumns[0] || '';
-                    const userId = cleanColumns[1] || '';
-                    const date = cleanColumns[3] || cleanColumns[2] || ''; // 날짜 컬럼 유연하게 처리
-                    const distanceStr = cleanColumns[4] || cleanColumns[3] || ''; // 거리 컬럼 유연하게 처리
+                // 각 컬럼별 내용 확인
+                cleanColumns.forEach((col, idx) => {
+                    const isNumber = !isNaN(parseFloat(col)) && isFinite(col);
+                    const isDate = /^\d{4}[-./]\d{1,2}[-./]\d{1,2}/.test(col) || /^\d{1,2}[-./]\d{1,2}/.test(col);
+                    console.log(`  컬럼 ${idx}: "${col}" (숫자: ${isNumber}, 날짜: ${isDate})`);
+                });
+                
+                if (cleanColumns.length >= 3) {
+                    // 스마트 컬럼 감지 시스템
+                    let timestamp = '', userId = '', runDate = '', distance = '';
                     
-                    const distance = parseFloat(distanceStr);
+                    // 첫 번째 컬럼은 보통 타임스탬프
+                    if (cleanColumns.length >= 1) {
+                        timestamp = cleanColumns[0];
+                    }
                     
-                    if (userId && !isNaN(distance) && distance > 0) {
+                    // 두 번째 컬럼은 보통 사용자 ID
+                    if (cleanColumns.length >= 2) {
+                        userId = cleanColumns[1];
+                    }
+                    
+                    // 나머지 컬럼들에서 날짜와 거리 찾기
+                    for (let j = 2; j < cleanColumns.length; j++) {
+                        const col = cleanColumns[j];
+                        const isNumber = !isNaN(parseFloat(col)) && isFinite(col) && parseFloat(col) > 0;
+                        const isDate = /^\d{4}[-./]\d{1,2}[-./]\d{1,2}/.test(col) || 
+                                      /^\d{1,2}[-./]\d{1,2}[-./]\d{1,2}/.test(col) ||
+                                      /^\d{1,2}[-./]\d{1,2}/.test(col);
+                        
+                        if (isDate && !runDate) {
+                            runDate = col;
+                            console.log(`  → 날짜로 인식: 컬럼 ${j} = "${col}"`);
+                        } else if (isNumber && !distance && parseFloat(col) < 100) { // 거리는 보통 100km 미만
+                            distance = col;
+                            console.log(`  → 거리로 인식: 컬럼 ${j} = "${col}"`);
+                        }
+                    }
+                    
+                    // 여전히 찾지 못했다면 순서대로 할당
+                    if (!runDate && !distance) {
+                        if (cleanColumns.length >= 4) {
+                            // 일반적인 패턴 시도
+                            runDate = cleanColumns[3];
+                            distance = cleanColumns[4] || cleanColumns[2];
+                        } else if (cleanColumns.length === 3) {
+                            runDate = cleanColumns[2];
+                            distance = cleanColumns[2]; // 임시
+                        }
+                    }
+                    
+                    console.log(`  최종 매핑 - 사용자: "${userId}", 날짜: "${runDate}", 거리: "${distance}"`);
+                    
+                    const distanceNum = parseFloat(distance);
+                    
+                    if (userId && !isNaN(distanceNum) && distanceNum > 0) {
+                        const team = findUserTeam(userId.trim());
+                        
+                        if (team) {
+                            const record = {
+                                timestamp: timestamp.trim(),
+                                userId: userId.trim(),
+                                team: team,
+                                date: runDate.trim(),
+                                distance: distanceNum
+                            };
+                            data.push(record);
+                            console.log('✅ 추가된 데이터:', record);
+                        } else {
+                            console.log('❌ 팀을 찾을 수 없는 사용자:', userId.trim());
+                        }
+                    } else {
+                        console.log(`❌ 유효하지 않은 데이터 - 사용자: "${userId}", 거리: "${distance}" (${distanceNum})`);
+                    }
+                }
+                console.log('---');
+            }
+            
+            // 전체 데이터 처리 (같은 로직 적용)
+            for (let i = 6; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const columns = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                const cleanColumns = columns.map(col => col.replace(/^"|"$/g, '').trim());
+                
+                if (cleanColumns.length >= 3) {
+                    let timestamp = '', userId = '', runDate = '', distance = '';
+                    
+                    if (cleanColumns.length >= 1) timestamp = cleanColumns[0];
+                    if (cleanColumns.length >= 2) userId = cleanColumns[1];
+                    
+                    // 스마트 감지
+                    for (let j = 2; j < cleanColumns.length; j++) {
+                        const col = cleanColumns[j];
+                        const isNumber = !isNaN(parseFloat(col)) && isFinite(col) && parseFloat(col) > 0;
+                        const isDate = /^\d{4}[-./]\d{1,2}[-./]\d{1,2}/.test(col) || 
+                                      /^\d{1,2}[-./]\d{1,2}[-./]\d{1,2}/.test(col) ||
+                                      /^\d{1,2}[-./]\d{1,2}/.test(col);
+                        
+                        if (isDate && !runDate) {
+                            runDate = col;
+                        } else if (isNumber && !distance && parseFloat(col) < 100) {
+                            distance = col;
+                        }
+                    }
+                    
+                    // 백업 할당
+                    if (!runDate && !distance) {
+                        if (cleanColumns.length >= 4) {
+                            runDate = cleanColumns[3];
+                            distance = cleanColumns[4] || cleanColumns[2];
+                        } else if (cleanColumns.length === 3) {
+                            runDate = cleanColumns[2];
+                            distance = cleanColumns[2];
+                        }
+                    }
+                    
+                    const distanceNum = parseFloat(distance);
+                    
+                    if (userId && !isNaN(distanceNum) && distanceNum > 0) {
                         const team = findUserTeam(userId.trim());
                         
                         if (team) {
@@ -632,18 +747,16 @@
                                 timestamp: timestamp.trim(),
                                 userId: userId.trim(),
                                 team: team,
-                                date: date.trim(),
-                                distance: distance
+                                date: runDate.trim(),
+                                distance: distanceNum
                             });
-                            console.log('추가된 데이터:', { userId: userId.trim(), team, distance });
-                        } else {
-                            console.log('팀을 찾을 수 없는 사용자:', userId.trim());
                         }
                     }
                 }
             }
             
             console.log('파싱 완료, 총 데이터:', data.length);
+            console.log('=== CSV 파싱 디버깅 끝 ===');
             return data;
         }
         
@@ -683,7 +796,7 @@
             updatePersonalChart();
         }
         
-        // 메인 차트 업데이트 (가로 막대 차트로 변경)
+        // 메인 차트 업데이트 (핑크/라벤더 색상으로 변경)
         function updateMainChart() {
             const ctx = document.getElementById('mainChart').getContext('2d');
             
@@ -702,8 +815,8 @@
                     datasets: [{
                         label: '누적 거리 (km)',
                         data: [totals['우유'], totals['포도']],
-                        backgroundColor: ['#8b5cf6', '#6366f1'],
-                        borderColor: ['#7c3aed', '#4338ca'],
+                        backgroundColor: ['#f472b6', '#a5b4fc'],
+                        borderColor: ['#ec4899', '#8b5cf6'],
                         borderWidth: 2,
                         borderRadius: 8
                     }]
@@ -752,7 +865,7 @@
             });
         }
         
-        // 파이 차트 업데이트
+        // 파이 차트 업데이트 (핑크/라벤더 색상)
         function updatePieChart() {
             const ctx = document.getElementById('pieChart').getContext('2d');
             
@@ -769,7 +882,7 @@
                     labels: ['🥛 우유팀', '🍇 포도팀'],
                     datasets: [{
                         data: [totals['우유'], totals['포도']],
-                        backgroundColor: ['#8b5cf6', '#6366f1']
+                        backgroundColor: ['#f472b6', '#a5b4fc']
                     }]
                 },
                 options: {
@@ -794,7 +907,7 @@
             });
         }
         
-        // 개인별 차트 업데이트 (완전 가로형으로 변경)
+        // 개인별 차트 업데이트 (핑크/라벤더 색상)
         function updatePersonalChart() {
             const ctx = document.getElementById('personalChart').getContext('2d');
             
@@ -816,8 +929,8 @@
                     datasets: [{
                         label: 'km',
                         data: top5.map(([,total]) => total),
-                        backgroundColor: top5.map(([user]) => findUserTeam(user) === '우유' ? '#8b5cf6' : '#6366f1'),
-                        borderColor: top5.map(([user]) => findUserTeam(user) === '우유' ? '#7c3aed' : '#4338ca'),
+                        backgroundColor: top5.map(([user]) => findUserTeam(user) === '우유' ? '#f472b6' : '#a5b4fc'),
+                        borderColor: top5.map(([user]) => findUserTeam(user) === '우유' ? '#ec4899' : '#8b5cf6'),
                         borderWidth: 1,
                         borderRadius: 4
                     }]
