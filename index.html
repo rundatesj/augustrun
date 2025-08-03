@@ -340,7 +340,12 @@
         <div class="main-content">
             <!-- 왼쪽 패널: 설정 및 기록 입력 -->
             <div class="left-panel">
-                <!-- 관리자 설정 버튼 (JavaScript에서 추가됨) -->
+                <!-- 관리자 설정 버튼 -->
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <button class="btn-small" onclick="toggleSettings()" id="toggle-btn">
+                        ⚙️ 관리자 설정
+                    </button>
+                </div>
                 
                 <!-- CSV 설정 (기본 숨김) -->
                 <div class="setup-section hidden" id="csv-setup">
@@ -461,38 +466,18 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('시스템 초기화 시작');
             
-            // 관리자 설정 버튼 추가
-            addSettingsToggle();
-            
-            // 자동으로 기본 설정 적용
-            const savedCsvUrl = localStorage.getItem('csvUrl') || DEFAULT_CSV_URL;
-            const savedFormsEmbed = localStorage.getItem('formsEmbed') || DEFAULT_FORMS_EMBED;
-            
-            document.getElementById('csvUrl').value = savedCsvUrl;
-            document.getElementById('formsEmbed').value = savedFormsEmbed;
+            // 기본 설정 적용
+            document.getElementById('csvUrl').value = DEFAULT_CSV_URL;
+            document.getElementById('formsEmbed').value = DEFAULT_FORMS_EMBED;
             
             // 자동으로 연결 실행
             embedForms();
-            loadData();
             
-            console.log('자동 설정 완료');
+            // 더미 데이터로 우선 UI 초기화
+            loadDummyData();
+            
+            console.log('초기화 완료');
         });
-        
-        // 관리자 설정 토글 버튼 추가
-        function addSettingsToggle() {
-            const leftPanel = document.querySelector('.left-panel');
-            
-            const toggleBtn = document.createElement('div');
-            toggleBtn.innerHTML = `
-                <div style="text-align: center; margin-bottom: 15px;">
-                    <button class="btn-small" onclick="toggleSettings()" id="toggle-btn">
-                        ⚙️ 관리자 설정
-                    </button>
-                </div>
-            `;
-            
-            leftPanel.insertBefore(toggleBtn, leftPanel.firstChild);
-        }
         
         // 설정 토글
         function toggleSettings() {
@@ -524,7 +509,6 @@
             }
             
             container.innerHTML = embedCode;
-            localStorage.setItem('formsEmbed', embedCode);
             showStatus('success', 'Google Forms 연결됨!');
         }
         
@@ -550,20 +534,44 @@
             try {
                 showStatus('warning', '로드 중...');
                 
-                const response = await fetch(csvUrl);
+                // CORS 프록시를 사용하여 데이터 로드 시도
+                let response;
+                try {
+                    response = await fetch(csvUrl);
+                } catch (corsError) {
+                    console.log('직접 접근 실패, 프록시 사용 시도');
+                    // CORS 문제 해결을 위한 프록시 서비스 사용
+                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(csvUrl)}`;
+                    const proxyResponse = await fetch(proxyUrl);
+                    const proxyData = await proxyResponse.json();
+                    if (proxyData.status.http_code === 200) {
+                        response = { ok: true, text: () => Promise.resolve(proxyData.contents) };
+                    } else {
+                        throw new Error('프록시를 통한 데이터 로드 실패');
+                    }
+                }
+                
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
                 const csvText = await response.text();
-                records = parseCSV(csvText);
+                const newRecords = parseCSV(csvText);
                 
-                localStorage.setItem('csvUrl', csvUrl);
-                showStatus('success', `${records.length}개 기록 로드됨!`);
-                updateUI();
+                if (newRecords.length > 0) {
+                    records = newRecords;
+                    showStatus('success', `${records.length}개 기록 로드됨!`);
+                    updateUI();
+                } else {
+                    throw new Error('유효한 데이터가 없습니다');
+                }
                 
             } catch (error) {
+                console.error('데이터 로드 실패:', error);
                 showStatus('error', `로드 실패: ${error.message}`);
-                console.log('실제 데이터 로드 실패, 더미 데이터 사용');
-                loadDummyData(); // 실패시 더미 데이터 사용
+                
+                // 실패시 더미 데이터 유지
+                if (records.length === 0) {
+                    loadDummyData();
+                }
             }
         }
         
@@ -576,33 +584,47 @@
                 { timestamp: '2025-01-15 12:00', userId: '바다', team: '포도', date: '2025-01-15', distance: 6.1 },
                 { timestamp: '2025-01-15 12:30', userId: '봉무동러너', team: '우유', date: '2025-01-15', distance: 7.3 },
                 { timestamp: '2025-01-16 09:00', userId: '자달매', team: '포도', date: '2025-01-16', distance: 2.8 },
-                { timestamp: '2025-01-16 10:15', userId: '신욱재', team: '우유', date: '2025-01-16', distance: 6.5 }
+                { timestamp: '2025-01-16 10:15', userId: '신욱재', team: '우유', date: '2025-01-16', distance: 6.5 },
+                { timestamp: '2025-01-17 08:45', userId: '삼남매맘', team: '우유', date: '2025-01-17', distance: 3.8 },
+                { timestamp: '2025-01-17 09:30', userId: '해피러너', team: '포도', date: '2025-01-17', distance: 5.2 },
+                { timestamp: '2025-01-17 10:00', userId: '우유키', team: '우유', date: '2025-01-17', distance: 4.9 }
             ];
             
-            showStatus('warning', `더미 데이터 ${records.length}개 로드됨 (테스트용)`);
+            showStatus('warning', `더미 데이터 ${records.length}개 사용 중 (테스트용)`);
             updateUI();
         }
         
-        // CSV 파싱
+        // CSV 파싱 개선
         function parseCSV(csvText) {
             const lines = csvText.trim().split('\n');
             if (lines.length <= 1) return [];
             
             const data = [];
+            console.log('CSV 파싱 시작, 총 라인:', lines.length);
+            
+            // 헤더 확인
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            console.log('헤더:', headers);
             
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
                 
-                const columns = line.split(',');
+                // CSV 파싱 개선 (따옴표 처리)
+                const columns = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
+                const cleanColumns = columns.map(col => col.replace(/^"|"$/g, '').trim());
                 
-                if (columns.length >= 4) {
-                    const timestamp = columns[0] || '';
-                    const userId = columns[1] || '';
-                    const date = columns[3] || '';
-                    const distance = columns[4] || '';
+                console.log(`라인 ${i}:`, cleanColumns);
+                
+                if (cleanColumns.length >= 4) {
+                    const timestamp = cleanColumns[0] || '';
+                    const userId = cleanColumns[1] || '';
+                    const date = cleanColumns[3] || cleanColumns[2] || ''; // 날짜 컬럼 유연하게 처리
+                    const distanceStr = cleanColumns[4] || cleanColumns[3] || ''; // 거리 컬럼 유연하게 처리
                     
-                    if (userId && distance && !isNaN(parseFloat(distance))) {
+                    const distance = parseFloat(distanceStr);
+                    
+                    if (userId && !isNaN(distance) && distance > 0) {
                         const team = findUserTeam(userId.trim());
                         
                         if (team) {
@@ -611,13 +633,17 @@
                                 userId: userId.trim(),
                                 team: team,
                                 date: date.trim(),
-                                distance: parseFloat(distance.trim())
+                                distance: distance
                             });
+                            console.log('추가된 데이터:', { userId: userId.trim(), team, distance });
+                        } else {
+                            console.log('팀을 찾을 수 없는 사용자:', userId.trim());
                         }
                     }
                 }
             }
             
+            console.log('파싱 완료, 총 데이터:', data.length);
             return data;
         }
         
@@ -657,7 +683,7 @@
             updatePersonalChart();
         }
         
-        // 메인 차트 업데이트
+        // 메인 차트 업데이트 (개선)
         function updateMainChart() {
             const ctx = document.getElementById('mainChart').getContext('2d');
             
@@ -665,10 +691,14 @@
                 charts.main.destroy();
             }
             
+            // 날짜별 데이터 집계
             const dailyData = {};
             records.forEach(r => {
+                // 날짜 정규화
                 let normalizedDate = r.date.replace(/\./g, '-').replace(/\s+/g, '');
-                if (!dailyData[normalizedDate]) dailyData[normalizedDate] = { '우유': 0, '포도': 0 };
+                if (!dailyData[normalizedDate]) {
+                    dailyData[normalizedDate] = { '우유': 0, '포도': 0 };
+                }
                 dailyData[normalizedDate][r.team] += r.distance;
             });
             
@@ -678,27 +708,53 @@
             const chartData = dates.map(date => {
                 milkTotal += dailyData[date]['우유'];
                 grapeTotal += dailyData[date]['포도'];
-                return { date, milk: milkTotal, grape: grapeTotal };
+                return { 
+                    date: date.substring(5), // MM-DD 형태로 표시
+                    milk: milkTotal, 
+                    grape: grapeTotal 
+                };
             });
             
             charts.main = new Chart(ctx, {
-                type: 'bar',
+                type: 'line',
                 data: {
                     labels: chartData.map(d => d.date),
                     datasets: [
-                        { label: '🥛 우유팀', data: chartData.map(d => d.milk), backgroundColor: '#8b5cf6' },
-                        { label: '🍇 포도팀', data: chartData.map(d => d.grape), backgroundColor: '#6366f1' }
+                        { 
+                            label: '🥛 우유팀', 
+                            data: chartData.map(d => d.milk), 
+                            backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                            borderColor: '#8b5cf6',
+                            tension: 0.3,
+                            fill: false
+                        },
+                        { 
+                            label: '🍇 포도팀', 
+                            data: chartData.map(d => d.grape), 
+                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                            borderColor: '#6366f1',
+                            tension: 0.3,
+                            fill: false
+                        }
                     ]
                 },
                 options: { 
-                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: { 
-                        x: { beginAtZero: true },
-                        y: { }
+                        y: { beginAtZero: true, title: { display: true, text: '누적 거리 (km)' } },
+                        x: { title: { display: true, text: '날짜' } }
                     },
-                    plugins: { legend: { position: 'top' } }
+                    plugins: { 
+                        legend: { position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} km`;
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -726,7 +782,21 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { font: { size: 8 } } } }
+                    plugins: { 
+                        legend: { 
+                            position: 'bottom', 
+                            labels: { font: { size: 10 } } 
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const total = totals['우유'] + totals['포도'];
+                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
+                                    return `${context.label}: ${context.parsed.toFixed(1)}km (${percentage}%)`;
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -762,9 +832,18 @@
                     maintainAspectRatio: false,
                     scales: { 
                         x: { beginAtZero: true },
-                        y: { ticks: { font: { size: 8 } } }
+                        y: { ticks: { font: { size: 10 } } }
                     },
-                    plugins: { legend: { display: false } }
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.parsed.x.toFixed(1)} km`;
+                                }
+                            }
+                        }
+                    }
                 }
             });
         }
@@ -784,3 +863,11 @@
                 <tr>
                     <td>${r.userId.length > 8 ? r.userId.substring(0, 8) + '...' : r.userId}</td>
                     <td><span class="team-badge ${r.team === '우유' ? 'milk' : 'grape'}">${r.team === '우유' ? '🥛' : '🍇'}</span></td>
+                    <td>${r.distance.toFixed(1)}km</td>
+                    <td>${r.date.substring(5) || r.date}</td>
+                </tr>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
