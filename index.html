@@ -15,17 +15,18 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #e0f2fe 0%, #e8eaf6 100%);
-            height: 100vh;
-            overflow: auto;
+            min-height: 100vh;
+            overflow-x: hidden;
             padding: 8px;
         }
         
         .container {
-            height: calc(100vh - 16px);
-            max-height: 900px;
+            max-width: 1400px;
+            margin: 0 auto;
             display: grid;
             grid-template-rows: auto 1fr;
             gap: 8px;
+            min-height: calc(100vh - 16px);
         }
         
         .header {
@@ -51,8 +52,7 @@
             display: grid;
             grid-template-columns: 280px 1fr 280px;
             gap: 8px;
-            height: 100%;
-            min-height: 600px;
+            align-items: start;
         }
         
         .left-panel, .right-panel {
@@ -66,9 +66,8 @@
         
         .center-panel {
             display: grid;
-            grid-template-rows: auto 1fr auto;
+            grid-template-rows: auto auto auto;
             gap: 8px;
-            min-height: 600px;
         }
         
         .team-cards {
@@ -116,7 +115,7 @@
             border-radius: 8px;
             padding: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            min-height: 250px;
+            height: 300px;
         }
         
         .chart-container h3 {
@@ -129,7 +128,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            min-height: 150px;
+            height: 200px;
         }
         
         .mini-chart {
@@ -137,6 +136,8 @@
             border-radius: 8px;
             padding: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: 200px;
+            overflow: hidden;
         }
         
         .mini-chart h4 {
@@ -147,13 +148,12 @@
         
         .chart-canvas {
             width: 100%;
-            height: 100px;
+            height: 140px !important;
         }
         
         .main-chart-canvas {
             width: 100%;
             height: calc(100% - 30px);
-            min-height: 200px;
             max-height: 250px;
         }
         
@@ -683,7 +683,7 @@
             updatePersonalChart();
         }
         
-        // 메인 차트 업데이트 (개선)
+        // 메인 차트 업데이트 (가로형으로 개선)
         function updateMainChart() {
             const ctx = document.getElementById('mainChart').getContext('2d');
             
@@ -725,29 +725,54 @@
                             data: chartData.map(d => d.milk), 
                             backgroundColor: 'rgba(139, 92, 246, 0.2)',
                             borderColor: '#8b5cf6',
+                            borderWidth: 3,
                             tension: 0.3,
-                            fill: false
+                            fill: false,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
                         },
                         { 
                             label: '🍇 포도팀', 
                             data: chartData.map(d => d.grape), 
                             backgroundColor: 'rgba(99, 102, 241, 0.2)',
                             borderColor: '#6366f1',
+                            borderWidth: 3,
                             tension: 0.3,
-                            fill: false
+                            fill: false,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
                         }
                     ]
                 },
                 options: { 
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
                     scales: { 
-                        y: { beginAtZero: true, title: { display: true, text: '누적 거리 (km)' } },
-                        x: { title: { display: true, text: '날짜' } }
+                        y: { 
+                            beginAtZero: true, 
+                            title: { display: true, text: '누적 거리 (km)' },
+                            grid: { color: 'rgba(0,0,0,0.1)' }
+                        },
+                        x: { 
+                            title: { display: true, text: '날짜' },
+                            grid: { display: false }
+                        }
                     },
                     plugins: { 
-                        legend: { position: 'top' },
+                        legend: { 
+                            position: 'top',
+                            labels: { usePointStyle: true, padding: 15 }
+                        },
                         tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: 'rgba(255,255,255,0.2)',
+                            borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
                                     return `${context.dataset.label}: ${context.parsed.y.toFixed(1)} km`;
@@ -801,7 +826,7 @@
             });
         }
         
-        // 개인별 차트 업데이트
+        // 개인별 차트 업데이트 (완전 가로형으로 변경)
         function updatePersonalChart() {
             const ctx = document.getElementById('personalChart').getContext('2d');
             
@@ -819,29 +844,52 @@
             charts.personal = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: top5.map(([user]) => user.length > 8 ? user.substring(0, 8) + '...' : user),
+                    labels: top5.map(([user]) => user.length > 6 ? user.substring(0, 6) + '..' : user),
                     datasets: [{
                         label: 'km',
                         data: top5.map(([,total]) => total),
-                        backgroundColor: top5.map(([user]) => findUserTeam(user) === '우유' ? '#8b5cf6' : '#6366f1')
+                        backgroundColor: top5.map(([user]) => findUserTeam(user) === '우유' ? '#8b5cf6' : '#6366f1'),
+                        borderColor: top5.map(([user]) => findUserTeam(user) === '우유' ? '#7c3aed' : '#4338ca'),
+                        borderWidth: 1,
+                        borderRadius: 4
                     }]
                 },
                 options: { 
-                    indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: { 
-                        x: { beginAtZero: true },
-                        y: { ticks: { font: { size: 10 } } }
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.1)' },
+                            ticks: { font: { size: 10 } }
+                        },
+                        x: { 
+                            ticks: { 
+                                font: { size: 9 },
+                                maxRotation: 45,
+                                minRotation: 0
+                            },
+                            grid: { display: false }
+                        }
                     },
                     plugins: { 
                         legend: { display: false },
                         tooltip: {
+                            backgroundColor: 'rgba(0,0,0,0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
                             callbacks: {
                                 label: function(context) {
-                                    return `${context.parsed.x.toFixed(1)} km`;
+                                    const team = findUserTeam(top5[context.dataIndex][0]);
+                                    return `${context.parsed.y.toFixed(1)} km (${team}팀)`;
                                 }
                             }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 5,
+                            bottom: 5
                         }
                     }
                 }
