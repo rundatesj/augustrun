@@ -594,87 +594,56 @@
             updateUI();
         }
         
-        // CSV 파싱 개선 (컬럼 순서 문제 해결)
+        // CSV 파싱 - 거리와 날짜 필드 바꿔서 저장
         function parseCSV(csvText) {
             const lines = csvText.trim().split('\n');
             if (lines.length <= 1) return [];
             
             const data = [];
-            console.log('=== CSV 파싱 디버깅 (컬럼 순서 문제 해결) ===');
+            console.log('=== CSV 파싱 (거리↔날짜 수정) ===');
             console.log('CSV 파싱 시작, 총 라인:', lines.length);
             
             // 헤더 확인
             const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
             console.log('헤더:', headers);
-            console.log('헤더 개수:', headers.length);
             
             for (let i = 1; i < Math.min(lines.length, 6); i++) { // 처음 5개 데이터만 디버깅
                 const line = lines[i].trim();
                 if (!line) continue;
                 
-                // CSV 파싱 개선 (따옴표 처리)
                 const columns = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
                 const cleanColumns = columns.map(col => col.replace(/^"|"$/g, '').trim());
                 
-                console.log(`라인 ${i} 원본:`, line);
                 console.log(`라인 ${i} 파싱:`, cleanColumns);
-                console.log(`컬럼 개수: ${cleanColumns.length}`);
-                
-                // 각 컬럼별 내용 확인
-                cleanColumns.forEach((col, idx) => {
-                    const isNumber = !isNaN(parseFloat(col)) && isFinite(col);
-                    const isDate = /^\d{4}[-./]\d{1,2}[-./]\d{1,2}/.test(col) || /^\d{1,2}[-./]\d{1,2}/.test(col);
-                    console.log(`  컬럼 ${idx}: "${col}" (숫자: ${isNumber}, 날짜: ${isDate})`);
-                });
                 
                 if (cleanColumns.length >= 3) {
-                    // 스마트 컬럼 감지 시스템
-                    let timestamp = '', userId = '', runDate = '', distance = '';
+                    let timestamp = '', userId = '', rawDate = '', rawDistance = '';
                     
-                    // 첫 번째 컬럼은 보통 타임스탬프
-                    if (cleanColumns.length >= 1) {
+                    // 기본 구조 파악
+                    if (cleanColumns.length >= 5) {
                         timestamp = cleanColumns[0];
-                    }
-                    
-                    // 두 번째 컬럼은 보통 사용자 ID
-                    if (cleanColumns.length >= 2) {
                         userId = cleanColumns[1];
+                        rawDate = cleanColumns[3];    // 원래 날짜 필드 (실제로는 거리값)
+                        rawDistance = cleanColumns[4]; // 원래 거리 필드 (실제로는 날짜값)
+                    } else if (cleanColumns.length === 4) {
+                        timestamp = cleanColumns[0];
+                        userId = cleanColumns[1];
+                        rawDate = cleanColumns[2];
+                        rawDistance = cleanColumns[3];
+                    } else if (cleanColumns.length === 3) {
+                        userId = cleanColumns[0];
+                        rawDate = cleanColumns[1];
+                        rawDistance = cleanColumns[2];
                     }
                     
-                    // 나머지 컬럼들에서 날짜와 거리 찾기
-                    for (let j = 2; j < cleanColumns.length; j++) {
-                        const col = cleanColumns[j];
-                        const isNumber = !isNaN(parseFloat(col)) && isFinite(col) && parseFloat(col) > 0;
-                        const isDate = /^\d{4}[-./]\d{1,2}[-./]\d{1,2}/.test(col) || 
-                                      /^\d{1,2}[-./]\d{1,2}[-./]\d{1,2}/.test(col) ||
-                                      /^\d{1,2}[-./]\d{1,2}/.test(col);
-                        
-                        if (isDate && !runDate) {
-                            runDate = col;
-                            console.log(`  → 날짜로 인식: 컬럼 ${j} = "${col}"`);
-                        } else if (isNumber && !distance && parseFloat(col) < 100) { // 거리는 보통 100km 미만
-                            distance = col;
-                            console.log(`  → 거리로 인식: 컬럼 ${j} = "${col}"`);
-                        }
-                    }
+                    // 거리와 날짜 바꿔서 할당
+                    const actualDistance = parseFloat(rawDate);     // 날짜 필드에 있는 거리값
+                    const actualDate = rawDistance;                // 거리 필드에 있는 날짜값
                     
-                    // 여전히 찾지 못했다면 순서대로 할당
-                    if (!runDate && !distance) {
-                        if (cleanColumns.length >= 4) {
-                            // 일반적인 패턴 시도
-                            runDate = cleanColumns[3];
-                            distance = cleanColumns[4] || cleanColumns[2];
-                        } else if (cleanColumns.length === 3) {
-                            runDate = cleanColumns[2];
-                            distance = cleanColumns[2]; // 임시
-                        }
-                    }
+                    console.log(`  원본 - 날짜필드: "${rawDate}", 거리필드: "${rawDistance}"`);
+                    console.log(`  수정 - 실제거리: ${actualDistance}, 실제날짜: "${actualDate}"`);
                     
-                    console.log(`  최종 매핑 - 사용자: "${userId}", 날짜: "${runDate}", 거리: "${distance}"`);
-                    
-                    const distanceNum = parseFloat(distance);
-                    
-                    if (userId && !isNaN(distanceNum) && distanceNum > 0) {
+                    if (userId && !isNaN(actualDistance) && actualDistance > 0) {
                         const team = findUserTeam(userId.trim());
                         
                         if (team) {
@@ -682,22 +651,20 @@
                                 timestamp: timestamp.trim(),
                                 userId: userId.trim(),
                                 team: team,
-                                date: runDate.trim(),
-                                distance: distanceNum
+                                date: actualDate.trim(),           // 진짜 날짜
+                                distance: actualDistance           // 진짜 거리
                             };
                             data.push(record);
-                            console.log('✅ 추가된 데이터:', record);
+                            console.log('✅ 수정된 데이터:', record);
                         } else {
                             console.log('❌ 팀을 찾을 수 없는 사용자:', userId.trim());
                         }
-                    } else {
-                        console.log(`❌ 유효하지 않은 데이터 - 사용자: "${userId}", 거리: "${distance}" (${distanceNum})`);
                     }
                 }
                 console.log('---');
             }
             
-            // 전체 데이터 처리 (같은 로직 적용)
+            // 전체 데이터 처리 (같은 로직)
             for (let i = 6; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
@@ -706,40 +673,28 @@
                 const cleanColumns = columns.map(col => col.replace(/^"|"$/g, '').trim());
                 
                 if (cleanColumns.length >= 3) {
-                    let timestamp = '', userId = '', runDate = '', distance = '';
+                    let timestamp = '', userId = '', rawDate = '', rawDistance = '';
                     
-                    if (cleanColumns.length >= 1) timestamp = cleanColumns[0];
-                    if (cleanColumns.length >= 2) userId = cleanColumns[1];
-                    
-                    // 스마트 감지
-                    for (let j = 2; j < cleanColumns.length; j++) {
-                        const col = cleanColumns[j];
-                        const isNumber = !isNaN(parseFloat(col)) && isFinite(col) && parseFloat(col) > 0;
-                        const isDate = /^\d{4}[-./]\d{1,2}[-./]\d{1,2}/.test(col) || 
-                                      /^\d{1,2}[-./]\d{1,2}[-./]\d{1,2}/.test(col) ||
-                                      /^\d{1,2}[-./]\d{1,2}/.test(col);
-                        
-                        if (isDate && !runDate) {
-                            runDate = col;
-                        } else if (isNumber && !distance && parseFloat(col) < 100) {
-                            distance = col;
-                        }
+                    if (cleanColumns.length >= 5) {
+                        timestamp = cleanColumns[0];
+                        userId = cleanColumns[1];
+                        rawDate = cleanColumns[3];
+                        rawDistance = cleanColumns[4];
+                    } else if (cleanColumns.length === 4) {
+                        timestamp = cleanColumns[0];
+                        userId = cleanColumns[1];
+                        rawDate = cleanColumns[2];
+                        rawDistance = cleanColumns[3];
+                    } else if (cleanColumns.length === 3) {
+                        userId = cleanColumns[0];
+                        rawDate = cleanColumns[1];
+                        rawDistance = cleanColumns[2];
                     }
                     
-                    // 백업 할당
-                    if (!runDate && !distance) {
-                        if (cleanColumns.length >= 4) {
-                            runDate = cleanColumns[3];
-                            distance = cleanColumns[4] || cleanColumns[2];
-                        } else if (cleanColumns.length === 3) {
-                            runDate = cleanColumns[2];
-                            distance = cleanColumns[2];
-                        }
-                    }
+                    const actualDistance = parseFloat(rawDate);
+                    const actualDate = rawDistance;
                     
-                    const distanceNum = parseFloat(distance);
-                    
-                    if (userId && !isNaN(distanceNum) && distanceNum > 0) {
+                    if (userId && !isNaN(actualDistance) && actualDistance > 0) {
                         const team = findUserTeam(userId.trim());
                         
                         if (team) {
@@ -747,8 +702,8 @@
                                 timestamp: timestamp.trim(),
                                 userId: userId.trim(),
                                 team: team,
-                                date: runDate.trim(),
-                                distance: distanceNum
+                                date: actualDate.trim(),
+                                distance: actualDistance
                             });
                         }
                     }
@@ -756,7 +711,7 @@
             }
             
             console.log('파싱 완료, 총 데이터:', data.length);
-            console.log('=== CSV 파싱 디버깅 끝 ===');
+            console.log('=== CSV 파싱 끝 ===');
             return data;
         }
         
@@ -977,7 +932,7 @@
             });
         }
         
-        // 테이블 업데이트 (거리와 날짜 컬럼 순서 바꾸기)
+        // 테이블 업데이트 (이제 정상적으로 표시)
         function updateRecordsTable() {
             const tbody = document.getElementById('records-tbody');
             
@@ -989,23 +944,23 @@
             const recent = records.slice(-20).reverse();
             
             tbody.innerHTML = recent.map(r => {
-                // 거리와 날짜가 바뀌어 있는 상황 - 서로 바꿔서 표시
-                let displayDate = r.distance ? r.distance.toString() : '--'; // 원래 거리 필드를 날짜로
-                let displayDistance = r.date ? parseFloat(r.date) : 0; // 원래 날짜 필드를 거리로
+                // 이제 정상적인 데이터 구조 사용
+                let displayDate = r.date || '--';
                 
-                // 날짜 형식 정리 (숫자로 들어온 날짜 처리)
+                // 숫자로 된 날짜 형식 처리
                 if (displayDate && !isNaN(displayDate)) {
-                    // 20241215 같은 형식일 경우
+                    displayDate = displayDate.toString();
+                    // 20241215 → 12-15
                     if (displayDate.length === 8) {
                         displayDate = `${displayDate.substring(4,6)}-${displayDate.substring(6,8)}`;
                     } 
-                    // 1215 같은 형식일 경우 
+                    // 1215 → 12-15
                     else if (displayDate.length === 4) {
                         displayDate = `${displayDate.substring(0,2)}-${displayDate.substring(2,4)}`;
                     }
-                    // 기타 숫자 형식
-                    else {
-                        displayDate = displayDate.toString();
+                    // 215 → 02-15
+                    else if (displayDate.length === 3) {
+                        displayDate = `0${displayDate.substring(0,1)}-${displayDate.substring(1,3)}`;
                     }
                 }
                 
@@ -1013,7 +968,7 @@
                     <tr>
                         <td>${r.userId.length > 8 ? r.userId.substring(0, 8) + '...' : r.userId}</td>
                         <td><span class="team-badge ${r.team === '우유' ? 'milk' : 'grape'}">${r.team === '우유' ? '🥛' : '🍇'}</span></td>
-                        <td>${displayDistance.toFixed(1)}km</td>
+                        <td>${r.distance.toFixed(1)}km</td>
                         <td>${displayDate}</td>
                     </tr>
                 `;
