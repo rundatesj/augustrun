@@ -15,59 +15,56 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #e0f2fe 0%, #e8eaf6 100%);
-            min-height: 100vh;
-            overflow-x: hidden;
-            padding: 8px;
+            height: 100vh;
+            overflow: hidden;
+            padding: 10px;
         }
         
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            height: calc(100vh - 20px);
             display: grid;
             grid-template-rows: auto 1fr;
-            gap: 8px;
-            min-height: calc(100vh - 16px);
+            gap: 10px;
         }
         
         .header {
             text-align: center;
             background: white;
-            padding: 10px;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         .header h1 {
-            font-size: 1.6rem;
+            font-size: 1.8rem;
             color: #374151;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
         }
         
         .header p {
             color: #6b7280;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
         }
         
         .main-content {
             display: grid;
-            grid-template-columns: 280px 1fr 280px;
-            gap: 8px;
-            align-items: start;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 10px;
+            height: 100%;
         }
         
         .left-panel, .right-panel {
             background: white;
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             overflow-y: auto;
-            max-height: calc(100vh - 120px);
         }
         
         .center-panel {
             display: grid;
-            grid-template-rows: auto auto auto;
-            gap: 8px;
+            grid-template-rows: auto 1fr auto;
+            gap: 10px;
         }
         
         .team-cards {
@@ -112,49 +109,44 @@
         
         .chart-container {
             background: white;
-            border-radius: 8px;
-            padding: 12px;
+            border-radius: 12px;
+            padding: 15px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            height: 300px;
         }
         
         .chart-container h3 {
             color: #374151;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
+            margin-bottom: 10px;
+            font-size: 1rem;
         }
         
         .mini-charts {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            height: 200px;
+            gap: 10px;
         }
         
         .mini-chart {
             background: white;
-            border-radius: 8px;
-            padding: 10px;
+            border-radius: 12px;
+            padding: 12px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            height: 200px;
-            overflow: hidden;
         }
         
         .mini-chart h4 {
             color: #374151;
-            margin-bottom: 6px;
-            font-size: 0.85rem;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
         }
         
         .chart-canvas {
             width: 100%;
-            height: 140px !important;
+            height: 120px;
         }
         
         .main-chart-canvas {
             width: 100%;
-            height: calc(100% - 30px);
-            max-height: 250px;
+            height: calc(100% - 40px);
         }
         
         .setup-section {
@@ -181,9 +173,9 @@
         
         .input-group input, .input-group textarea {
             width: 100%;
-            padding: 6px;
+            padding: 8px;
             border: 1px solid #d1d5db;
-            border-radius: 4px;
+            border-radius: 6px;
             font-size: 0.85rem;
         }
         
@@ -195,7 +187,7 @@
         .btn {
             background: #10b981;
             color: white;
-            padding: 6px 12px;
+            padding: 8px 12px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
@@ -206,21 +198,6 @@
         
         .btn:hover {
             background: #059669;
-        }
-        
-        .btn-small {
-            background: #6b7280;
-            color: white;
-            padding: 4px 8px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.8rem;
-            width: auto;
-        }
-        
-        .btn-small:hover {
-            background: #4b5563;
         }
         
         .status {
@@ -284,8 +261,8 @@
         
         .iframe-container {
             width: 100%;
-            height: 280px;
-            border-radius: 6px;
+            height: 350px;
+            border-radius: 8px;
             overflow: hidden;
             border: 1px solid #e5e7eb;
         }
@@ -294,10 +271,6 @@
             width: 100%;
             height: 100%;
             border: none;
-        }
-        
-        .hidden {
-            display: none !important;
         }
         
         @media (max-width: 1200px) {
@@ -338,33 +311,36 @@
         </div>
 
         <div class="main-content">
-            <!-- 왼쪽 패널: 설정 및 기록 입력 -->
+            <!-- 왼쪽 패널: 설정 -->
             <div class="left-panel">
-                <!-- 관리자 설정 버튼 -->
+                <!-- 관리자 설정 토글 버튼 -->
                 <div style="text-align: center; margin-bottom: 15px;">
-                    <button class="btn-small" onclick="toggleSettings()" id="toggle-btn">
+                    <button class="btn" onclick="toggleAdminSettings()" id="admin-toggle" style="width: auto; padding: 6px 12px; font-size: 0.8rem; background: #6b7280;">
                         ⚙️ 관리자 설정
                     </button>
                 </div>
-                
-                <!-- CSV 설정 (기본 숨김) -->
-                <div class="setup-section hidden" id="csv-setup">
-                    <h3>📊 데이터 연결</h3>
-                    <div class="input-group">
-                        <label>스프레드시트 CSV URL</label>
-                        <input type="url" id="csvUrl" placeholder="CSV URL을 입력하세요">
-                        <button class="btn" onclick="loadData()">데이터 로드</button>
-                        <div id="status"></div>
-                    </div>
-                </div>
 
-                <!-- Forms 설정 (기본 숨김) -->
-                <div class="setup-section hidden" id="forms-setup">
-                    <h3>📝 Forms 연결</h3>
-                    <div class="input-group">
-                        <label>Google Forms 임베드 코드</label>
-                        <textarea id="formsEmbed" placeholder="<iframe src=...></iframe>"></textarea>
-                        <button class="btn" onclick="embedForms()">Forms 연결</button>
+                <!-- 관리자 설정 영역 (기본 숨김) -->
+                <div id="admin-settings" style="display: none;">
+                    <!-- CSV 설정 -->
+                    <div class="setup-section">
+                        <h3>📊 데이터 연결</h3>
+                        <div class="input-group">
+                            <label>스프레드시트 CSV URL</label>
+                            <input type="url" id="csvUrl" placeholder="CSV URL을 입력하세요">
+                            <button class="btn" onclick="loadData()">데이터 로드</button>
+                            <div id="status"></div>
+                        </div>
+                    </div>
+
+                    <!-- Forms 설정 -->
+                    <div class="setup-section">
+                        <h3>📝 Forms 연결</h3>
+                        <div class="input-group">
+                            <label>Google Forms 임베드 코드</label>
+                            <textarea id="formsEmbed" placeholder="<iframe src=...></iframe>"></textarea>
+                            <button class="btn" onclick="embedForms()">Forms 연결</button>
+                        </div>
                     </div>
                 </div>
 
@@ -399,7 +375,7 @@
 
                 <!-- 메인 차트 -->
                 <div class="chart-container">
-                    <h3>팀별 누적 기록 비교</h3>
+                    <h3>팀별 누적 기록</h3>
                     <canvas id="mainChart" class="main-chart-canvas"></canvas>
                 </div>
 
@@ -421,10 +397,10 @@
                 <div class="setup-section">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                         <h3>📋 최근 기록</h3>
-                        <button class="btn-small" onclick="loadData()">🔄</button>
+                        <button class="btn" onclick="loadData()" style="width: auto; padding: 4px 8px; font-size: 0.8rem;">🔄</button>
                     </div>
                     
-                    <div style="max-height: calc(100vh - 300px); overflow-y: auto;">
+                    <div style="max-height: calc(100vh - 200px); overflow-y: auto;">
                         <table class="records-table">
                             <thead>
                                 <tr>
@@ -437,7 +413,7 @@
                             <tbody id="records-tbody">
                                 <tr>
                                     <td colspan="4" style="text-align: center; color: #6b7280; padding: 20px;">
-                                        데이터 로드 중...
+                                        데이터를 로드해주세요
                                     </td>
                                 </tr>
                             </tbody>
@@ -458,47 +434,22 @@
         let records = [];
         let charts = {};
         
-        // 기본 설정값
-        const DEFAULT_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQSxKnN2BUIBcbNrpywGy2F_YjLnzWjabSOSCO_Kmwnq-mvia1E6g4ezt5nwwEj-3CWblrJO1xjaLTk/pub?output=csv';
-        const DEFAULT_FORMS_EMBED = '<iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfToqiLU4-8Ckl23xO3y_r6dvjSDheU6TgALlvd2QT0e0na-Q/viewform?embedded=true" width="100%" height="280" frameborder="0">로드 중…</iframe>';
-        
         // 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('시스템 초기화 시작');
+            const savedCsvUrl = localStorage.getItem('csvUrl');
+            const savedFormsEmbed = localStorage.getItem('formsEmbed');
             
-            // 기본 설정 적용
-            document.getElementById('csvUrl').value = DEFAULT_CSV_URL;
-            document.getElementById('formsEmbed').value = DEFAULT_FORMS_EMBED;
+            if (savedCsvUrl) {
+                document.getElementById('csvUrl').value = savedCsvUrl;
+                loadData();
+            }
             
-            // 자동으로 연결 실행
-            embedForms();
-            
-            // 더미 데이터로 우선 UI 초기화
-            loadDummyData();
-            
-            console.log('초기화 완료');
+            if (savedFormsEmbed) {
+                document.getElementById('formsEmbed').value = savedFormsEmbed;
+                embedForms();
+            }
         });
         
-        // 설정 토글
-        function toggleSettings() {
-            const csvSetup = document.getElementById('csv-setup');
-            const formsSetup = document.getElementById('forms-setup');
-            const toggleBtn = document.getElementById('toggle-btn');
-            
-            const isHidden = csvSetup.classList.contains('hidden');
-            
-            if (isHidden) {
-                csvSetup.classList.remove('hidden');
-                formsSetup.classList.remove('hidden');
-                toggleBtn.textContent = '❌ 설정 숨기기';
-            } else {
-                csvSetup.classList.add('hidden');
-                formsSetup.classList.add('hidden');
-                toggleBtn.textContent = '⚙️ 관리자 설정';
-            }
-        }
-        
-        // Google Forms 임베드
         function embedForms() {
             const embedCode = document.getElementById('formsEmbed').value.trim();
             const container = document.getElementById('forms-container');
@@ -509,10 +460,10 @@
             }
             
             container.innerHTML = embedCode;
+            localStorage.setItem('formsEmbed', embedCode);
             showStatus('success', 'Google Forms 연결됨!');
         }
         
-        // 사용자 팀 찾기
         function findUserTeam(userId) {
             for (const [team, members] of Object.entries(crewMembers)) {
                 if (members.includes(userId)) {
@@ -522,7 +473,6 @@
             return null;
         }
         
-        // 데이터 로드
         async function loadData() {
             const csvUrl = document.getElementById('csvUrl').value.trim();
             
@@ -534,167 +484,41 @@
             try {
                 showStatus('warning', '로드 중...');
                 
-                // CORS 프록시를 사용하여 데이터 로드 시도
-                let response;
-                try {
-                    response = await fetch(csvUrl);
-                } catch (corsError) {
-                    console.log('직접 접근 실패, 프록시 사용 시도');
-                    // CORS 문제 해결을 위한 프록시 서비스 사용
-                    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(csvUrl)}`;
-                    const proxyResponse = await fetch(proxyUrl);
-                    const proxyData = await proxyResponse.json();
-                    if (proxyData.status.http_code === 200) {
-                        response = { ok: true, text: () => Promise.resolve(proxyData.contents) };
-                    } else {
-                        throw new Error('프록시를 통한 데이터 로드 실패');
-                    }
-                }
-                
+                const response = await fetch(csvUrl);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
                 const csvText = await response.text();
-                const newRecords = parseCSV(csvText);
+                records = parseCSV(csvText);
                 
-                if (newRecords.length > 0) {
-                    records = newRecords;
-                    showStatus('success', `${records.length}개 기록 로드됨!`);
-                    updateUI();
-                } else {
-                    throw new Error('유효한 데이터가 없습니다');
-                }
+                localStorage.setItem('csvUrl', csvUrl);
+                showStatus('success', `${records.length}개 기록 로드됨!`);
+                updateUI();
                 
             } catch (error) {
-                console.error('데이터 로드 실패:', error);
                 showStatus('error', `로드 실패: ${error.message}`);
-                
-                // 실패시 더미 데이터 유지
-                if (records.length === 0) {
-                    loadDummyData();
-                }
             }
         }
         
-        // 더미 데이터 로드 (로컬 테스트용)
-        function loadDummyData() {
-            records = [
-                { timestamp: '2025-01-15 10:30', userId: 'goinggoing', team: '우유', date: '2025-01-15', distance: 5.0 },
-                { timestamp: '2025-01-15 11:00', userId: '권초게', team: '포도', date: '2025-01-15', distance: 3.5 },
-                { timestamp: '2025-01-15 11:30', userId: '마커스', team: '우유', date: '2025-01-15', distance: 4.2 },
-                { timestamp: '2025-01-15 12:00', userId: '바다', team: '포도', date: '2025-01-15', distance: 6.1 },
-                { timestamp: '2025-01-15 12:30', userId: '봉무동러너', team: '우유', date: '2025-01-15', distance: 7.3 },
-                { timestamp: '2025-01-16 09:00', userId: '자달매', team: '포도', date: '2025-01-16', distance: 2.8 },
-                { timestamp: '2025-01-16 10:15', userId: '신욱재', team: '우유', date: '2025-01-16', distance: 6.5 },
-                { timestamp: '2025-01-17 08:45', userId: '삼남매맘', team: '우유', date: '2025-01-17', distance: 3.8 },
-                { timestamp: '2025-01-17 09:30', userId: '해피러너', team: '포도', date: '2025-01-17', distance: 5.2 },
-                { timestamp: '2025-01-17 10:00', userId: '우유키', team: '우유', date: '2025-01-17', distance: 4.9 }
-            ];
-            
-            showStatus('warning', `더미 데이터 ${records.length}개 사용 중 (테스트용)`);
-            updateUI();
-        }
-        
-        // CSV 파싱 - 거리와 날짜 필드 바꿔서 저장
         function parseCSV(csvText) {
             const lines = csvText.trim().split('\n');
             if (lines.length <= 1) return [];
             
             const data = [];
-            console.log('=== CSV 파싱 (거리↔날짜 수정) ===');
-            console.log('CSV 파싱 시작, 총 라인:', lines.length);
             
-            // 헤더 확인
-            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
-            console.log('헤더:', headers);
-            
-            for (let i = 1; i < Math.min(lines.length, 6); i++) { // 처음 5개 데이터만 디버깅
+            for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
                 
-                const columns = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-                const cleanColumns = columns.map(col => col.replace(/^"|"$/g, '').trim());
+                const columns = line.split(',');
                 
-                console.log(`라인 ${i} 파싱:`, cleanColumns);
-                
-                if (cleanColumns.length >= 3) {
-                    let timestamp = '', userId = '', rawDate = '', rawDistance = '';
+                if (columns.length >= 4) {
+                    const timestamp = columns[0] || '';
+                    const userId = columns[1] || '';
+                    const emptyTeam = columns[2] || '';
+                    const date = columns[3] || '';
+                    const distance = columns[4] || '';
                     
-                    // 기본 구조 파악
-                    if (cleanColumns.length >= 5) {
-                        timestamp = cleanColumns[0];
-                        userId = cleanColumns[1];
-                        rawDate = cleanColumns[3];    // 원래 날짜 필드 (실제로는 거리값)
-                        rawDistance = cleanColumns[4]; // 원래 거리 필드 (실제로는 날짜값)
-                    } else if (cleanColumns.length === 4) {
-                        timestamp = cleanColumns[0];
-                        userId = cleanColumns[1];
-                        rawDate = cleanColumns[2];
-                        rawDistance = cleanColumns[3];
-                    } else if (cleanColumns.length === 3) {
-                        userId = cleanColumns[0];
-                        rawDate = cleanColumns[1];
-                        rawDistance = cleanColumns[2];
-                    }
-                    
-                    // 거리와 날짜 바꿔서 할당
-                    const actualDistance = parseFloat(rawDate);     // 날짜 필드에 있는 거리값
-                    const actualDate = rawDistance;                // 거리 필드에 있는 날짜값
-                    
-                    console.log(`  원본 - 날짜필드: "${rawDate}", 거리필드: "${rawDistance}"`);
-                    console.log(`  수정 - 실제거리: ${actualDistance}, 실제날짜: "${actualDate}"`);
-                    
-                    if (userId && !isNaN(actualDistance) && actualDistance > 0) {
-                        const team = findUserTeam(userId.trim());
-                        
-                        if (team) {
-                            const record = {
-                                timestamp: timestamp.trim(),
-                                userId: userId.trim(),
-                                team: team,
-                                date: actualDate.trim(),           // 진짜 날짜
-                                distance: actualDistance           // 진짜 거리
-                            };
-                            data.push(record);
-                            console.log('✅ 수정된 데이터:', record);
-                        } else {
-                            console.log('❌ 팀을 찾을 수 없는 사용자:', userId.trim());
-                        }
-                    }
-                }
-                console.log('---');
-            }
-            
-            // 전체 데이터 처리 (같은 로직)
-            for (let i = 6; i < lines.length; i++) {
-                const line = lines[i].trim();
-                if (!line) continue;
-                
-                const columns = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || [];
-                const cleanColumns = columns.map(col => col.replace(/^"|"$/g, '').trim());
-                
-                if (cleanColumns.length >= 3) {
-                    let timestamp = '', userId = '', rawDate = '', rawDistance = '';
-                    
-                    if (cleanColumns.length >= 5) {
-                        timestamp = cleanColumns[0];
-                        userId = cleanColumns[1];
-                        rawDate = cleanColumns[3];
-                        rawDistance = cleanColumns[4];
-                    } else if (cleanColumns.length === 4) {
-                        timestamp = cleanColumns[0];
-                        userId = cleanColumns[1];
-                        rawDate = cleanColumns[2];
-                        rawDistance = cleanColumns[3];
-                    } else if (cleanColumns.length === 3) {
-                        userId = cleanColumns[0];
-                        rawDate = cleanColumns[1];
-                        rawDistance = cleanColumns[2];
-                    }
-                    
-                    const actualDistance = parseFloat(rawDate);
-                    const actualDate = rawDistance;
-                    
-                    if (userId && !isNaN(actualDistance) && actualDistance > 0) {
+                    if (userId && distance && !isNaN(parseFloat(distance))) {
                         const team = findUserTeam(userId.trim());
                         
                         if (team) {
@@ -702,24 +526,19 @@
                                 timestamp: timestamp.trim(),
                                 userId: userId.trim(),
                                 team: team,
-                                date: actualDate.trim(),
-                                distance: actualDistance
+                                date: date.trim(),
+                                distance: parseFloat(distance.trim())
                             });
                         }
                     }
                 }
             }
             
-            console.log('파싱 완료, 총 데이터:', data.length);
-            console.log('=== CSV 파싱 끝 ===');
             return data;
         }
         
-        // 상태 표시
         function showStatus(type, message) {
             const statusDiv = document.getElementById('status');
-            if (!statusDiv) return;
-            
             statusDiv.className = `status ${type}`;
             statusDiv.textContent = message;
             
@@ -728,14 +547,12 @@
             }
         }
         
-        // UI 업데이트
         function updateUI() {
             updateTeamScores();
             updateCharts();
             updateRecordsTable();
         }
         
-        // 팀 점수 업데이트
         function updateTeamScores() {
             const totals = { '우유': 0, '포도': 0 };
             records.forEach(r => totals[r.team] += r.distance);
@@ -744,89 +561,114 @@
             document.getElementById('grape-score').textContent = `${totals['포도'].toFixed(1)} km`;
         }
         
-        // 차트 업데이트
         function updateCharts() {
-            updateMainChart();
-            updatePieChart();
-            updatePersonalChart();
+            // 차트 업데이트 전에 완전히 초기화
+            destroyAllCharts();
+            
+            // 잠시 대기 후 새 차트 생성
+            setTimeout(() => {
+                updateMainChart();
+                updatePieChart();
+                updatePersonalChart();
+            }, 100);
         }
         
-        // 메인 차트 업데이트 (핑크/라벤더 색상으로 변경)
+        // 차트 완전 초기화 함수
+        function destroyAllCharts() {
+            // 모든 기존 차트 완전 파괴
+            Object.keys(charts).forEach(key => {
+                if (charts[key]) {
+                    charts[key].destroy();
+                    delete charts[key];
+                }
+            });
+            
+            // Canvas 요소들 완전 재생성
+            recreateCanvasElements();
+        }
+        
+        // Canvas 요소 재생성
+        function recreateCanvasElements() {
+            // 메인 차트 Canvas 재생성
+            const mainContainer = document.getElementById('mainChart').parentNode;
+            const oldMain = document.getElementById('mainChart');
+            const newMain = document.createElement('canvas');
+            newMain.id = 'mainChart';
+            newMain.className = 'main-chart-canvas';
+            newMain.style.width = '100%';
+            newMain.style.height = '100%';
+            newMain.style.maxHeight = '300px';
+            mainContainer.replaceChild(newMain, oldMain);
+            
+            // 파이 차트 Canvas 재생성
+            const pieContainer = document.getElementById('pieChart').parentNode;
+            const oldPie = document.getElementById('pieChart');
+            const newPie = document.createElement('canvas');
+            newPie.id = 'pieChart';
+            newPie.className = 'chart-canvas';
+            newPie.style.width = '100%';
+            newPie.style.height = '120px';
+            newPie.style.maxHeight = '120px';
+            pieContainer.replaceChild(newPie, oldPie);
+            
+            // 개인별 차트 Canvas 재생성
+            const personalContainer = document.getElementById('personalChart').parentNode;
+            const oldPersonal = document.getElementById('personalChart');
+            const newPersonal = document.createElement('canvas');
+            newPersonal.id = 'personalChart';
+            newPersonal.className = 'chart-canvas';
+            newPersonal.style.width = '100%';
+            newPersonal.style.height = '120px';
+            newPersonal.style.maxHeight = '120px';
+            personalContainer.replaceChild(newPersonal, oldPersonal);
+        }
+        
         function updateMainChart() {
             const ctx = document.getElementById('mainChart').getContext('2d');
             
-            if (charts.main) {
-                charts.main.destroy();
-            }
+            const dailyData = {};
+            records.forEach(r => {
+                let normalizedDate = r.date.replace(/\./g, '-').replace(/\s+/g, '');
+                if (!dailyData[normalizedDate]) dailyData[normalizedDate] = { '우유': 0, '포도': 0 };
+                dailyData[normalizedDate][r.team] += r.distance;
+            });
             
-            // 팀별 총합 계산
-            const totals = { '우유': 0, '포도': 0 };
-            records.forEach(r => totals[r.team] += r.distance);
+            const dates = Object.keys(dailyData).sort();
+            let milkTotal = 0, grapeTotal = 0;
             
+            const chartData = dates.map(date => {
+                milkTotal += dailyData[date]['우유'];
+                grapeTotal += dailyData[date]['포도'];
+                return { date, milk: milkTotal, grape: grapeTotal };
+            });
+            
+            // 가로 막대그래프로 변경 - 핑크/라벤더 색상
             charts.main = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: ['🥛 우유팀', '🍇 포도팀'],
-                    datasets: [{
-                        label: '누적 거리 (km)',
-                        data: [totals['우유'], totals['포도']],
-                        backgroundColor: ['#f472b6', '#a5b4fc'],
-                        borderColor: ['#ec4899', '#8b5cf6'],
-                        borderWidth: 2,
-                        borderRadius: 8
-                    }]
+                    labels: chartData.map(d => d.date),
+                    datasets: [
+                        { label: '🥛 우유팀', data: chartData.map(d => d.milk), backgroundColor: '#f472b6' },
+                        { label: '🍇 포도팀', data: chartData.map(d => d.grape), backgroundColor: '#a5b4fc' }
+                    ]
                 },
                 options: { 
-                    indexAxis: 'y', // 가로 막대
-                    responsive: true,
+                    indexAxis: 'y', // 가로 막대그래프
+                    responsive: false,
                     maintainAspectRatio: false,
+                    width: ctx.canvas.offsetWidth,
+                    height: 300,
                     scales: { 
-                        x: { 
-                            beginAtZero: true, 
-                            title: { display: true, text: '누적 거리 (km)' },
-                            grid: { color: 'rgba(0,0,0,0.1)' }
-                        },
-                        y: { 
-                            grid: { display: false },
-                            ticks: { font: { size: 14, weight: 'bold' } }
-                        }
+                        x: { beginAtZero: true }, // x축이 이제 값 축
+                        y: { } // y축이 라벨 축
                     },
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.8)',
-                            titleColor: 'white',
-                            bodyColor: 'white',
-                            borderColor: 'rgba(255,255,255,0.2)',
-                            borderWidth: 1,
-                            callbacks: {
-                                label: function(context) {
-                                    const total = totals['우유'] + totals['포도'];
-                                    const percentage = ((context.parsed.x / total) * 100).toFixed(1);
-                                    return `${context.parsed.x.toFixed(1)} km (${percentage}%)`;
-                                }
-                            }
-                        }
-                    },
-                    layout: {
-                        padding: {
-                            left: 10,
-                            right: 10,
-                            top: 20,
-                            bottom: 20
-                        }
-                    }
+                    plugins: { legend: { position: 'top' } }
                 }
             });
         }
         
-        // 파이 차트 업데이트 (핑크/라벤더 색상)
         function updatePieChart() {
             const ctx = document.getElementById('pieChart').getContext('2d');
-            
-            if (charts.pie) {
-                charts.pie.destroy();
-            }
             
             const totals = { '우유': 0, '포도': 0 };
             records.forEach(r => totals[r.team] += r.distance);
@@ -841,34 +683,17 @@
                     }]
                 },
                 options: {
-                    responsive: true,
+                    responsive: false,
                     maintainAspectRatio: false,
-                    plugins: { 
-                        legend: { 
-                            position: 'bottom', 
-                            labels: { font: { size: 10 } } 
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const total = totals['우유'] + totals['포도'];
-                                    const percentage = ((context.parsed / total) * 100).toFixed(1);
-                                    return `${context.label}: ${context.parsed.toFixed(1)}km (${percentage}%)`;
-                                }
-                            }
-                        }
-                    }
+                    width: ctx.canvas.offsetWidth,
+                    height: 120,
+                    plugins: { legend: { position: 'bottom', labels: { font: { size: 10 } } } }
                 }
             });
         }
         
-        // 개인별 차트 업데이트 (핑크/라벤더 색상)
         function updatePersonalChart() {
             const ctx = document.getElementById('personalChart').getContext('2d');
-            
-            if (charts.personal) {
-                charts.personal.destroy();
-            }
             
             const totals = {};
             records.forEach(r => totals[r.userId] = (totals[r.userId] || 0) + r.distance);
@@ -877,62 +702,34 @@
                 .sort(([,a], [,b]) => b - a)
                 .slice(0, 5);
             
+            // 가로 막대그래프로 변경 - 핑크/라벤더 색상
             charts.personal = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: top5.map(([user]) => user.length > 6 ? user.substring(0, 6) + '..' : user),
+                    labels: top5.map(([user]) => user.length > 8 ? user.substring(0, 8) + '...' : user),
                     datasets: [{
                         label: 'km',
                         data: top5.map(([,total]) => total),
-                        backgroundColor: top5.map(([user]) => findUserTeam(user) === '우유' ? '#f472b6' : '#a5b4fc'),
-                        borderColor: top5.map(([user]) => findUserTeam(user) === '우유' ? '#ec4899' : '#8b5cf6'),
-                        borderWidth: 1,
-                        borderRadius: 4
+                        backgroundColor: top5.map(([user]) => findUserTeam(user) === '우유' ? '#f472b6' : '#a5b4fc')
                     }]
                 },
                 options: { 
-                    responsive: true,
+                    indexAxis: 'y', // 가로 막대그래프
+                    responsive: false,
                     maintainAspectRatio: false,
+                    width: ctx.canvas.offsetWidth,
+                    height: 120,
                     scales: { 
+                        x: { beginAtZero: true }, // x축이 값 축
                         y: { 
-                            beginAtZero: true,
-                            grid: { color: 'rgba(0,0,0,0.1)' },
-                            ticks: { font: { size: 10 } }
-                        },
-                        x: { 
-                            ticks: { 
-                                font: { size: 9 },
-                                maxRotation: 45,
-                                minRotation: 0
-                            },
-                            grid: { display: false }
+                            ticks: { font: { size: 10 } } // 라벨 폰트 크기
                         }
                     },
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(0,0,0,0.8)',
-                            titleColor: 'white',
-                            bodyColor: 'white',
-                            callbacks: {
-                                label: function(context) {
-                                    const team = findUserTeam(top5[context.dataIndex][0]);
-                                    return `${context.parsed.y.toFixed(1)} km (${team}팀)`;
-                                }
-                            }
-                        }
-                    },
-                    layout: {
-                        padding: {
-                            top: 5,
-                            bottom: 5
-                        }
-                    }
+                    plugins: { legend: { display: false } }
                 }
             });
         }
         
-        // 테이블 업데이트 (이제 정상적으로 표시)
         function updateRecordsTable() {
             const tbody = document.getElementById('records-tbody');
             
@@ -943,36 +740,14 @@
             
             const recent = records.slice(-20).reverse();
             
-            tbody.innerHTML = recent.map(r => {
-                // 이제 정상적인 데이터 구조 사용
-                let displayDate = r.date || '--';
-                
-                // 숫자로 된 날짜 형식 처리
-                if (displayDate && !isNaN(displayDate)) {
-                    displayDate = displayDate.toString();
-                    // 20241215 → 12-15
-                    if (displayDate.length === 8) {
-                        displayDate = `${displayDate.substring(4,6)}-${displayDate.substring(6,8)}`;
-                    } 
-                    // 1215 → 12-15
-                    else if (displayDate.length === 4) {
-                        displayDate = `${displayDate.substring(0,2)}-${displayDate.substring(2,4)}`;
-                    }
-                    // 215 → 02-15
-                    else if (displayDate.length === 3) {
-                        displayDate = `0${displayDate.substring(0,1)}-${displayDate.substring(1,3)}`;
-                    }
-                }
-                
-                return `
-                    <tr>
-                        <td>${r.userId.length > 8 ? r.userId.substring(0, 8) + '...' : r.userId}</td>
-                        <td><span class="team-badge ${r.team === '우유' ? 'milk' : 'grape'}">${r.team === '우유' ? '🥛' : '🍇'}</span></td>
-                        <td>${r.distance.toFixed(1)}km</td>
-                        <td>${displayDate}</td>
-                    </tr>
-                `;
-            }).join('');
+            tbody.innerHTML = recent.map(r => `
+                <tr>
+                    <td>${r.userId.length > 8 ? r.userId.substring(0, 8) + '...' : r.userId}</td>
+                    <td><span class="team-badge ${r.team === '우유' ? 'milk' : 'grape'}">${r.team === '우유' ? '🥛' : '🍇'}</span></td>
+                    <td><strong>${r.distance}km</strong></td>
+                    <td style="font-size: 0.7rem;">${r.date.replace(/\s+/g, ' ')}</td>
+                </tr>
+            `).join('');
         }
     </script>
 </body>
